@@ -96,7 +96,7 @@ def parse_iso_date(value: str) -> date:
     
 def validate_range (s: date, e: date, max_days: int= MAX_RANGE_DAYS) -> None:
     if e < s:
-        raise HTTPException (status_code=400, detail="End_date must be grater thatn start_date.")
+        raise HTTPException(status_code=400, detail="End_date must be greater than start_date.")
     if (e-s).days >max_days:
         raise HTTPException (status_code=400, detail=f"Date range too large ({(e - s).days} days). Max allowed is {max_days} days.")
 
@@ -145,6 +145,11 @@ def parse_train_details_html(html: str,
             r for r in daily_records
             if r.get("date") and parse_italian_date(r["date"]) and s <= parse_italian_date(r["date"]) <= e
         ]
+    elif start_date or end_date:
+        raise HTTPException(
+            status_code=400,
+            detail="Provide both start_date and end_date, or neither.",
+        )
     return daily_records
 
 @app.get("/")
@@ -221,7 +226,7 @@ def get_train_details(
     response = requests.get(
         url,
         params={
-              "ref": "cr",
+            "ref": "cr",
             "treno": train_number,
             "stazpart": origin.upper(),
             "stazarr": destination.upper(),
