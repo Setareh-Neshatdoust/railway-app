@@ -1,3 +1,4 @@
+import re
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
@@ -89,31 +90,37 @@ def parse_train_details_html(
 ) -> List[Dict[str, Any]]:
     if "Fatal error" in html:
         return []
+    match = re.search(r"var tabDGdataCSV = `(.*?)`;", html, re.DOTALL)
+    if not match:
+        return []
 
-    soup = BeautifulSoup(html, "html.parser")
+    csv_text = match.group(1)
+
+    csv_text = match.group(1)
+    lines = [line for line in csv_text.strip().split("\n") if line.strip()]
+    if not lines:
+        return []
+
+    data_lines = lines[1:]
     daily_records = []
-    for table in soup.find_all("table"):
-        headers_row = table.find("tr")
-        if not headers_row:
+    for line in data_lines:
+        fields = line.split(";")
+        if len(fields) < 10:
             continue
-        header_cells = [c.get_text(strip=True).lower() for c in headers_row.find_all(["th", "td"])]
-        if "data" not in header_cells or "giorno" not in header_cells:
-            continue
-        for row in table.find_all("tr")[1:]:
-            cells = [c.get_text(strip=True) for c in row.find_all(["td", "th"])]
-            if len(cells) < 4:
-                continue
-            daily_records.append({
-                "day":             cells[0] if len(cells) > 0 else None,
-                "date":            cells[1] if len(cells) > 1 else None,
-                "origin":          cells[2] if len(cells) > 2 else None,
-                "departure_time":  cells[3] if len(cells) > 3 else None,
-                "departure_delay": cells[4] if len(cells) > 4 else None,
-                "destination":     cells[5] if len(cells) > 5 else None,
-                "arrival_time":    cells[6] if len(cells) > 6 else None,
-                "arrival_delay":   cells[7] if len(cells) > 7 else None,
-                "actions":         cells[8] if len(cells) > 8 else None,
-            })
+        daily_records.append({
+            "day":             fields[1],
+            "date":            fields[2],
+            "origin":          fields[3],
+            "departure_time":  fields[4],
+            "departure_delay": fields[5],
+            "destination":     fields[6],
+            "arrival_time":    fields[7],
+            "arrival_delay":   fields[8],
+            "status":          fields[9] if len(fields) > 9 else None,
+            "variations":      fields[10] if len(fields) > 10 else None,
+        })
+
+    
     if start_date and end_date:
         s = parse_iso_date(start_date)
         e = parse_iso_date(end_date)
