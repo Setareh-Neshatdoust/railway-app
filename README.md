@@ -9,9 +9,10 @@ A web application for analyzing Italian train performance data using TrainStats 
 
 ## Running with Docker
 ```bash
-docker pull setarehneshatdoust/railway-opendata-webapp:latest
-docker compose up
+docker pull setarehneshatdoust/railway-opendata-webapp:v1.1
+docker run -p 8000:8000 setarehneshatdoust/railway-opendata-webapp:v1.1
 ```
+Then open http://localhost:8000/docs for the interactive API documentation.
 
 ## Running locally
 ```bash
@@ -27,3 +28,4 @@ uvicorn main:app --reload --port 8000
 - `GET /train/stops` — intermediate stops for a train
 - `GET /train/history` — stop data across a date range
 - `GET /train/details` — daily historical records
+- `GET /route/stats` — date-range statistics for a route (average delay, cancellation rate, on-time percentage), aggregated across all trains on the route
