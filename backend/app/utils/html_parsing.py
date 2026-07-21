@@ -64,6 +64,9 @@ def parse_train_stops_html(html: str) -> List[Dict[str, Any]]:
         if "stazione" not in header_cells:
             continue
 
+        has_platform = any("bin" in h for h in header_cells)
+        offset = 1 if has_platform else 0
+
         for row in table.find_all("tr")[1:]:
             cells = [c.get_text(strip=True) for c in row.find_all(["td", "th"])]
             if len(cells) < 4:
@@ -71,13 +74,13 @@ def parse_train_stops_html(html: str) -> List[Dict[str, Any]]:
             stops.append({
                 "stop_number":          cells[0] if len(cells) > 0 else None,
                 "station":              cells[1] if len(cells) > 1 else None,
-                "platform":             cells[2] if len(cells) > 2 else None,
-                "arrival_scheduled":    cells[3] if len(cells) > 3 else None,
-                "arrival_actual":       cells[4] if len(cells) > 4 else None,
-                "arrival_delay":        cells[5] if len(cells) > 5 else None,
-                "departure_scheduled":  cells[6] if len(cells) > 6 else None,
-                "departure_actual":     cells[7] if len(cells) > 7 else None,
-                "departure_delay":      cells[8] if len(cells) > 8 else None,
+                "platform":             cells[2] if has_platform and len(cells) > 2 else None,
+                "arrival_scheduled":    cells[2 + offset] if len(cells) > 2 + offset else None,
+                "arrival_actual":       cells[3 + offset] if len(cells) > 3 + offset else None,
+                "arrival_delay":        cells[4 + offset] if len(cells) > 4 + offset else None,
+                "departure_scheduled":  cells[5 + offset] if len(cells) > 5 + offset else None,
+                "departure_actual":     cells[6 + offset] if len(cells) > 6 + offset else None,
+                "departure_delay":      cells[7 + offset] if len(cells) > 7 + offset else None,
             })
 
     return stops
