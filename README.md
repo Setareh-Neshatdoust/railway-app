@@ -9,8 +9,8 @@ A web application for analyzing Italian train performance data using TrainStats 
 
 ## Running with Docker
 ```bash
-docker pull setarehneshatdoust/railway-opendata-webapp:v1.1
-docker run -p 8000:8000 setarehneshatdoust/railway-opendata-webapp:v1.1
+docker pull setarehneshatdoust/railway-opendata-webapp:v1.2
+docker run -p 8000:8000 setarehneshatdoust/railway-opendata-webapp:v1.2
 ```
 Then open http://localhost:8000/docs for the interactive API documentation.
 
