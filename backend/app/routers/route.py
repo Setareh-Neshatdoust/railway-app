@@ -1,11 +1,11 @@
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException
-
-from app.services.trainstats_client import fetch_relation_html, fetch_train_details_html
+from datetime import timedelta
+from app.services.trainstats_client import fetch_relation_html, fetch_train_details_html, fetch_train_stops_html
 from app.utils.dates import parse_iso_date, validate_range
-from app.utils.html_parsing import parse_relation_html, parse_train_details_html
-from app.utils.stats import aggregate_route_stats
+from app.utils.html_parsing import parse_relation_html, parse_train_details_html, parse_train_stops_html
+from app.utils.stats import aggregate_route_stats, aggregate_station_stats, trim_stops_to_segment
 
 router = APIRouter(prefix="/route", tags=["route"])
 
@@ -18,6 +18,7 @@ def get_route_stats(
     end_date: str,
     train_number: Optional[str] = None,
     on_time_threshold_minutes: int = 5,
+    include_stations: bool = False,
 ):
     s = parse_iso_date(start_date)
     e = parse_iso_date(end_date)
@@ -67,6 +68,24 @@ def get_route_stats(
 
     overall = aggregate_route_stats(all_records, on_time_threshold_minutes)
 
+    all_stops = []
+    if include_stations:
+        unique_train_numbers = list(dict.fromkeys(t["train_number"] for t in trains))
+        current = s
+        while current <= e:
+            date_str = current.strftime("%d_%m_%Y")
+            for train_num in unique_train_numbers:
+                try:
+                    stops_html = fetch_train_stops_html(train_num, date_str, origin, force_utf8=True)
+                    stops = parse_train_stops_html(stops_html)
+                    stops = trim_stops_to_segment(stops, origin, destination)
+                    all_stops.extend(stops)
+                except Exception:
+                    pass
+            current += timedelta(days=1)
+
+    by_station = aggregate_station_stats(all_stops, on_time_threshold_minutes) if include_stations else []
+
     return {
         "origin": origin,
         "destination": destination,
@@ -75,4 +94,5 @@ def get_route_stats(
         "trains_analyzed": len(trains),
         "overall": overall,
         "by_train": by_train,
+        "by_station": by_station,
     }

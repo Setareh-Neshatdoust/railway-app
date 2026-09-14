@@ -62,3 +62,69 @@ def aggregate_route_stats(
         "on_time_percentage": round(len(on_time) / len(arrival_delays) * 100, 2) if arrival_delays else None,
         "on_time_threshold_minutes": on_time_threshold_minutes,
     }
+"""
+Analyzing also intemediate stations not only origin and destination
+"""
+def aggregate_station_stats(
+    stops: List[Dict[str, Any]],
+    on_time_threshold_minutes: int,
+) -> List[Dict[str, Any]]:
+    """
+    Groups a flat list of stop records (as returned by parse_train_stops_html,
+    collected across multiple days and/or trains) by station name, and
+    computes average delay and on-time percentage for each station.
+    """
+    by_station: Dict[str, List[Dict[str, Any]]] = {}
+    for stop in stops:
+        name = stop.get("station")
+        if not name:
+            continue
+        by_station.setdefault(name, []).append(stop)
+
+    results = []
+    for name, station_stops in by_station.items():
+        arrival_delays = [d for s in station_stops if (d := parse_delay_minutes(s.get("arrival_delay"))) is not None]
+        departure_delays = [d for s in station_stops if (d := parse_delay_minutes(s.get("departure_delay"))) is not None]
+        on_time = [d for d in arrival_delays if d <= on_time_threshold_minutes]
+
+        results.append({
+            "station": name,
+            "stop_number": station_stops[0].get("stop_number"),
+            "days_checked": len(station_stops),
+            "days_with_data": len(arrival_delays),
+            "avg_arrival_delay_min": round(sum(arrival_delays) / len(arrival_delays), 2) if arrival_delays else None,
+            "avg_departure_delay_min": round(sum(departure_delays) / len(departure_delays), 2) if departure_delays else None,
+            "on_time_percentage": round(len(on_time) / len(arrival_delays) * 100, 2) if arrival_delays else None,
+        })
+
+    results.sort(key=lambda r: int(r["stop_number"]) if r["stop_number"] and r["stop_number"].isdigit() else 999)
+    return results
+def trim_stops_to_segment(
+    stops: List[Dict[str, Any]],
+    origin: str,
+    destination: str,
+) -> List[Dict[str, Any]]:
+    """
+    A train's full stop list can extend beyond the requested route (e.g. a
+    long-distance train continuing past the destination to further cities,
+    or starting its journey before the requested origin). This trims the
+    list down to just the segment between origin and destination
+    (inclusive), so unrelated stations don't leak into station-level
+    aggregation.
+    """
+    origin_upper = origin.strip().upper()
+    destination_upper = destination.strip().upper()
+
+    origin_idx = next(
+        (i for i, s in enumerate(stops) if (s.get("station") or "").strip().upper() == origin_upper),
+        None,
+    )
+    destination_idx = next(
+        (i for i, s in enumerate(stops) if (s.get("station") or "").strip().upper() == destination_upper),
+        None,
+    )
+
+    if origin_idx is None or destination_idx is None or destination_idx < origin_idx:
+        return []
+
+    return stops[origin_idx:destination_idx + 1]
