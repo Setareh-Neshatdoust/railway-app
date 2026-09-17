@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+:root {
+  --rt-page: #F4F6F8;
+  --rt-panel: #FFFFFF;
+  --rt-line: #DDE3E8;
+
+  --rt-primary: #1B2733;
+  --rt-muted: #64748B;
+
+  --rt-signal-good: #0F6E56;
+  --rt-signal-warn: #854F0B;
+  --rt-signal-bad: #A32D2D;
+  --rt-signal-neutral: #64748B;
+
+  --rt-accent: #185FA5;
+}
+
+[data-theme="dark"] {
+  --rt-page: #0F1720;
+  --rt-panel: #16212C;
+  --rt-line: #223040;
+
+  --rt-primary: #E8EDF2;
+  --rt-muted: #8A99A8;
+
+  --rt-signal-good: #4FD1A5;
+  --rt-signal-warn: #F2B84B;
+  --rt-signal-bad: #E4584C;
+  --rt-signal-neutral: #8A99A8;
+
+  --rt-accent: #4FA8E0;
+}
+
+@theme {
+  --font-sans: 'IBM Plex Sans', ui-sans-serif, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  --color-page: var(--rt-page);
+  --color-panel: var(--rt-panel);
+  --color-line: var(--rt-line);
+
+  --color-primary: var(--rt-primary);
+  --color-muted: var(--rt-muted);
+
+  --color-signal-good: var(--rt-signal-good);
+  --color-signal-warn: var(--rt-signal-warn);
+  --color-signal-bad: var(--rt-signal-bad);
+  --color-signal-neutral: var(--rt-signal-neutral);
+
+  --color-accent: var(--rt-accent);
+}
+
+body {
+  background-color: var(--color-page);
+  color: var(--color-primary);
+  font-family: var(--font-sans);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
