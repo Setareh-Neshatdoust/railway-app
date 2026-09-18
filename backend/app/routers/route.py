@@ -70,11 +70,11 @@ def get_route_stats(
 
     all_stops = []
     if include_stations:
-        unique_train_numbers = list(dict.fromkeys(t["train_number"] for t in trains))
+        active_train_numbers = list(dict.fromkeys(entry["train_number"] for entry in by_train))
         current = s
         while current <= e:
             date_str = current.strftime("%d_%m_%Y")
-            for train_num in unique_train_numbers:
+            for train_num in active_train_numbers:
                 try:
                     stops_html = fetch_train_stops_html(train_num, date_str, origin, force_utf8=True)
                     stops = parse_train_stops_html(stops_html)

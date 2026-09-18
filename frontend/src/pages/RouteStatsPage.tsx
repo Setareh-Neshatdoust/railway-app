@@ -1,7 +1,8 @@
 
-import { useState,type FormEvent } from 'react'
+import { useState } from 'react'
 import { getRouteStats, ApiError } from '../api/client'
 import type { RouteStatsResponse } from '../api/types'
+import { RouteSearchForm, type RouteSearchValues } from '../components/RouteSearchForm'
 
 function formatValue(value: number | null, suffix = ''): string {
   if (value === null) return '—'
@@ -31,24 +32,22 @@ function StatCard({ label, value, colorClass }: StatCardProps) {
 }
 
 export function RouteStatsPage() {
-  const [origin, setOrigin] = useState('')
-  const [destination, setDestination] = useState('')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
-
   const [result, setResult] = useState<RouteStatsResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-  event.preventDefault()
-
+  async function handleSearch(values: RouteSearchValues) {
   setIsLoading(true)
   setError(null)
   setResult(null)
 
   try {
-    const data = await getRouteStats({ origin, destination, startDate, endDate })
+    const data = await getRouteStats({ 
+      origin:values.origin, 
+      destination:values.destination, 
+      startDate:values.startDate, 
+      endDate:values.endDate
+     })
     setResult(data)
   } catch (err) {
     if (err instanceof ApiError) {
@@ -64,59 +63,7 @@ return (
   <div className="p-6 max-w-3xl">
     <h2 className="text-base font-medium mb-4">Route statistics</h2>
 
-    <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-6">
-      <label className="flex flex-col gap-1 text-sm">
-        Origin
-        <input
-          type="text"
-          value={origin}
-          onChange={(e) => setOrigin(e.target.value)}
-          required
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1 text-sm">
-        Destination
-        <input
-          type="text"
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-          required
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1 text-sm">
-        Start date
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          required
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
-        />
-      </label>
-
-      <label className="flex flex-col gap-1 text-sm">
-        End date
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          required
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
-        />
-      </label>
-
-      <button
-        type="submit"
-        disabled={isLoading}
-        className="col-span-2 bg-accent text-white rounded-md py-2 font-medium disabled:opacity-50"
-      >
-        {isLoading ? 'Loading…' : 'Get stats'}
-      </button>
-    </form>
+    <RouteSearchForm onSubmit={handleSearch} isLoading={isLoading} />
 
     {error && (
       <div className="border border-signal-bad text-signal-bad rounded-md px-4 py-3 mb-6 text-sm">
