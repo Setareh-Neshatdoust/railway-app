@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { getRouteStats, ApiError } from '../api/client'
 import type { RouteStatsResponse, StationStats } from '../api/types'
 import { RouteSearchForm, type RouteSearchValues } from '../components/RouteSearchForm'
+import { ErrorMessage } from '../components/ErrorMessage'
 
 function formatValue(value: number | null, suffix = ''): string {
   if (value === null) return '—'
@@ -74,11 +75,8 @@ export function StationAnalysisPage() {
 
       <RouteSearchForm onSubmit={handleSearch} isLoading={isLoading} />
 
-      {error && (
-        <div className="border border-signal-bad text-signal-bad rounded-md px-4 py-3 mb-6 text-sm">
-          {error}
-        </div>
-      )}
+     {error && <ErrorMessage message={error} />}
+
 
       {result && (
         <div className="border border-line rounded-md overflow-hidden">
