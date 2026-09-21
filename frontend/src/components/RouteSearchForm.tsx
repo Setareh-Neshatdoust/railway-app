@@ -1,5 +1,6 @@
-
 import { useState, type FormEvent } from 'react'
+import { useStations } from '../hooks/useStations'
+import { StationAutocomplete } from './StationAutocomplete'
 
 export interface RouteSearchValues {
   origin: string
@@ -19,6 +20,8 @@ export function RouteSearchForm({ onSubmit, isLoading }: RouteSearchFormProps) {
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
 
+  const { stations } = useStations()
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     onSubmit({ origin, destination, startDate, endDate })
@@ -26,27 +29,19 @@ export function RouteSearchForm({ onSubmit, isLoading }: RouteSearchFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-6">
-      <label className="flex flex-col gap-1 text-sm">
-        Origin
-        <input
-          type="text"
-          value={origin}
-          onChange={(e) => setOrigin(e.target.value)}
-          required
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
-        />
-      </label>
+      <StationAutocomplete
+        label="Origin"
+        value={origin}
+        onChange={setOrigin}
+        options={stations}
+      />
 
-      <label className="flex flex-col gap-1 text-sm">
-        Destination
-        <input
-          type="text"
-          value={destination}
-          onChange={(e) => setDestination(e.target.value)}
-          required
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
-        />
-      </label>
+      <StationAutocomplete
+        label="Destination"
+        value={destination}
+        onChange={setDestination}
+        options={stations}
+      />
 
       <label className="flex flex-col gap-1 text-sm">
         Start date

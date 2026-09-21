@@ -69,6 +69,8 @@ def get_route_stats(
     overall = aggregate_route_stats(all_records, on_time_threshold_minutes)
 
     all_stops = []
+    canonical_origin = trains[0]["origin"]
+    canonical_destination = trains[0]["destination"]
     if include_stations:
         active_train_numbers = list(dict.fromkeys(entry["train_number"] for entry in by_train))
         current = s
@@ -78,7 +80,7 @@ def get_route_stats(
                 try:
                     stops_html = fetch_train_stops_html(train_num, date_str, origin, force_utf8=True)
                     stops = parse_train_stops_html(stops_html)
-                    stops = trim_stops_to_segment(stops, origin, destination)
+                    stops = trim_stops_to_segment(stops, canonical_origin, canonical_destination)
                     all_stops.extend(stops)
                 except Exception:
                     pass

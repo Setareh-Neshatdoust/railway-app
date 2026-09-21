@@ -60,3 +60,12 @@ def fetch_train_details_html(
     )
     response.encoding = "utf-8"
     return response.text
+# fetching all availabe stations can be searched to be analyzed
+def fetch_stations_js() -> str:
+    response = requests.get(
+        f"{BASE_URL}/script/stazioniCvNew.js",
+        headers=DEFAULT_HEADERS,
+        timeout=REQUEST_TIMEOUT,
+    )
+    response.encoding = "utf-8"
+    return response.text

@@ -1,4 +1,5 @@
 import re
+import json
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
@@ -145,3 +146,20 @@ def parse_train_details_html(
             detail="Provide both start_date and end_date, or neither.",
         )
     return daily_records
+
+def parse_stations_js(js_text: str) -> List[str]:
+    """
+    Extracts the full list of station names TrainStats knows about, from
+    the raw JavaScript file that powers its own "Cerca stazione" page.
+    The station list is embedded as a JSON-compatible array literal
+    (var stazs = [...]), the same embedding pattern as Bug #1's daily
+    records, just with real JSON syntax instead of semicolon-CSV text.
+    """
+    match = re.search(r"var stazs = (\[.*?\])\.sort\(\);", js_text, re.DOTALL)
+    if not match:
+        return []
+    try:
+        stations = json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return []
+    return sorted(set(stations))

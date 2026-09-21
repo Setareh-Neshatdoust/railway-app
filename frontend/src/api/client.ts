@@ -46,3 +46,12 @@ export async function getRouteStats(params: RouteStatsParams): Promise<RouteStat
 
   return response.json()
 }
+
+export async function getStations(): Promise<string[]> {
+  const response = await fetch(`${BASE_URL}/stations`)
+  if (!response.ok) {
+    throw new ApiError(response.status, 'Failed to load station list.')
+  }
+  const data = await response.json()
+  return data.stations
+}
