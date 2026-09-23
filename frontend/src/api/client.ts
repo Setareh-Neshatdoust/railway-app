@@ -1,5 +1,5 @@
 
-import type { RouteStatsResponse } from './types'
+import type { RouteStatsResponse , TrainStopsResponse} from './types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -54,4 +54,33 @@ export async function getStations(): Promise<string[]> {
   }
   const data = await response.json()
   return data.stations
+}
+
+function toTrainStatsDate(isoDate: string): string {
+  const [year, month, day] = isoDate.split('-')
+  return `${day}_${month}_${year}`
+}
+
+export interface TrainStopsParams {
+  trainNumber: string
+  origin: string
+  travelDate: string
+}
+
+export async function getTrainStops(params: TrainStopsParams): Promise<TrainStopsResponse> {
+  const query = new URLSearchParams({
+    train_number: params.trainNumber,
+    origin: params.origin,
+    travel_date: toTrainStatsDate(params.travelDate),
+  })
+
+  const response = await fetch(`${BASE_URL}/train/stops?${query.toString()}`)
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => null)
+    const message = body?.detail ?? `Request failed with status ${response.status}`
+    throw new ApiError(response.status, message)
+  }
+
+  return response.json()
 }

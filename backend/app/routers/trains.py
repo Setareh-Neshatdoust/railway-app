@@ -1,7 +1,7 @@
 from datetime import timedelta
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
 from app.services.trainstats_client import (
     fetch_relation_html,
@@ -42,6 +42,11 @@ def get_train_stops(
     """
     html = fetch_train_stops_html(train_number, travel_date, origin)
     stops = parse_train_stops_html(html)
+    if not stops:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No stop data found for train '{train_number}' on {travel_date} from '{origin}'.",
+        )
     return {
         "train_number": train_number,
         "date": travel_date,

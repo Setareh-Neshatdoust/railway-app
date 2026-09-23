@@ -4,6 +4,7 @@ import { getRouteStats, ApiError } from '../api/client'
 import type { RouteStatsResponse } from '../api/types'
 import { RouteSearchForm, type RouteSearchValues } from '../components/RouteSearchForm'
 import { ErrorMessage } from '../components/ErrorMessage'
+import { Link } from 'react-router-dom'
 
 function formatValue(value: number | null, suffix = ''): string {
   if (value === null) return '—'
@@ -36,11 +37,16 @@ export function RouteStatsPage() {
   const [result, setResult] = useState<RouteStatsResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [searchedOrigin, setSearchedOrigin] = useState('')
+  const [searchedStartDate, setSearchedStartDate] = useState('')
 
   async function handleSearch(values: RouteSearchValues) {
   setIsLoading(true)
   setError(null)
   setResult(null)
+  setSearchedOrigin(values.origin)
+  setSearchedOrigin(values.origin)
+  setSearchedStartDate(values.startDate)
 
   try {
     const data = await getRouteStats({ 
@@ -92,7 +98,12 @@ return (
     <div className="border border-line rounded-md divide-y divide-line">
       {result.by_train.map((train) => (
         <div key={train.train_number} className="flex items-center px-4 py-2 text-sm">
-          <span className="flex-1">{train.train_number} ({train.category})</span>
+          <Link
+            to={`/stops?train_number=${encodeURIComponent(train.train_number)}&origin=${encodeURIComponent(searchedOrigin)}&travel_date=${encodeURIComponent(searchedStartDate)}`}
+            className="flex-1 text-accent hover:underline"
+           >
+            {train.train_number} ({train.category})
+           </Link>
           <span className="font-mono text-muted mr-4">{train.total_records} records</span>
           <span className={`font-mono ${getPercentageColor(train.on_time_percentage)}`}>
             {formatValue(train.on_time_percentage, '%')}

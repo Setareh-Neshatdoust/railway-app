@@ -34,3 +34,23 @@ export interface RouteStatsResponse {
   by_train: TrainStats[]
   by_station: StationStats[]
 }
+
+export interface TrainStop {
+  stop_number: string
+  station: string
+  platform: string | null
+  arrival_scheduled: string
+  arrival_actual: string
+  arrival_delay: string
+  departure_scheduled: string
+  departure_actual: string
+  departure_delay: string
+}
+
+export interface TrainStopsResponse {
+  train_number: string
+  date: string
+  origin: string
+  total_stops: number
+  stops: TrainStop[]
+}
