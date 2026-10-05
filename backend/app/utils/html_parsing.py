@@ -151,9 +151,6 @@ def parse_stations_js(js_text: str) -> List[str]:
     """
     Extracts the full list of station names TrainStats knows about, from
     the raw JavaScript file that powers its own "Cerca stazione" page.
-    The station list is embedded as a JSON-compatible array literal
-    (var stazs = [...]), the same embedding pattern as Bug #1's daily
-    records, just with real JSON syntax instead of semicolon-CSV text.
     """
     match = re.search(r"var stazs = (\[.*?\])\.sort\(\);", js_text, re.DOTALL)
     if not match:
@@ -163,3 +160,18 @@ def parse_stations_js(js_text: str) -> List[str]:
     except json.JSONDecodeError:
         return []
     return sorted(set(stations))
+
+def parse_destinations_text (text: str) -> List[str]:
+
+    #Turns the Trainstats destination for a specific origin into a python list
+
+    if "<" in text:
+        return []
+    names = []
+    for name in text.split(";"):
+        names.append(name.strip())
+
+    return sorted(set(name for name in names if name))
+
+
+ 

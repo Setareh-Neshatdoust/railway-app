@@ -32,7 +32,7 @@ def fetch_train_stops_html(
         headers=DEFAULT_HEADERS,
         timeout=REQUEST_TIMEOUT,
     )
-    # force_utf8 preserves original behavior: get_train_history set this, get_train_stops didn't
+    """ force_utf8 preserves original behavior: get_train_history set this, get_train_stops didn't """
     if force_utf8:
         response.encoding = "utf-8"
     return response.text
@@ -60,12 +60,23 @@ def fetch_train_details_html(
     )
     response.encoding = "utf-8"
     return response.text
-# fetching all availabe stations can be searched to be analyzed
+""" fetching all availabe stations can be searched to be analyzed """
 def fetch_stations_js() -> str:
     response = requests.get(
         f"{BASE_URL}/script/stazioniCvNew.js",
         headers=DEFAULT_HEADERS,
         timeout=REQUEST_TIMEOUT,
+    )
+    response.encoding = "utf-8"
+    return response.text
+
+""" fecting the specific destination for the chosen origin according to Trainstats "cerca realizione" page """
+def fetch_destination_text(origin: str) -> str:
+    response = requests.get(
+        f"{BASE_URL}/libs/getRelazioniByCodStazione.php",
+        params={"staz":origin.upper()},
+        headers=DEFAULT_HEADERS,
+        timeout= REQUEST_TIMEOUT,
     )
     response.encoding = "utf-8"
     return response.text
