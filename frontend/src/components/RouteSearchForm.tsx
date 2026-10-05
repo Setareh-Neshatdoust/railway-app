@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useStations } from '../hooks/useStations'
 import { StationAutocomplete } from './StationAutocomplete'
+import { useDestinations } from '../hooks/useDestinations'
 
 export interface RouteSearchValues {
   origin: string
@@ -22,6 +23,21 @@ export function RouteSearchForm({ onSubmit, isLoading }: RouteSearchFormProps) {
 
   const { stations } = useStations()
 
+  //Destination will be only loaded once the origin is selected
+  const validOrigin = stations.includes(origin) ? origin : ''
+  const{destinations, error:destinationsError,isLoading: destinationsLoading} = useDestinations(validOrigin)
+
+  //Clearing previous destination when the origin is changed
+  function handleOriginChange (value : string){
+    setOrigin(value)
+    setDestination('')
+  }
+  let destinationHint:string
+  if(!origin)destinationHint='Choose an origin first'
+  else if(destinationsLoading)destinationHint='Loading destinations...'
+  else if(destinationsError)destinationHint=destinationsError
+  else destinationHint = `${destinations.length} destinations with recorded trains from ${validOrigin}.`
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     onSubmit({ origin, destination, startDate, endDate })
@@ -32,7 +48,7 @@ export function RouteSearchForm({ onSubmit, isLoading }: RouteSearchFormProps) {
       <StationAutocomplete
         label="Origin"
         value={origin}
-        onChange={setOrigin}
+        onChange={handleOriginChange}
         options={stations}
       />
 
@@ -40,7 +56,9 @@ export function RouteSearchForm({ onSubmit, isLoading }: RouteSearchFormProps) {
         label="Destination"
         value={destination}
         onChange={setDestination}
-        options={stations}
+        options={destinations}
+        disabled={!validOrigin || destinationsLoading || destinations.length === 0}
+        hint={destinationHint}
       />
 
       <label className="flex flex-col gap-1 text-sm">

@@ -1,32 +1,54 @@
-import { useState } from 'react'
+import { useState ,useRef, useEffect} from 'react'
 
 interface StationAutocompleteProps {
   label: string
   value: string
   onChange: (value: string) => void
   options: string[]
+  disabled?:boolean
+  hint?:string
+  placeholder?:string 
 }
 
-export function StationAutocomplete({ label, value, onChange, options }: StationAutocompleteProps) {
+export function StationAutocomplete({ 
+  label, 
+  value, 
+  onChange, 
+  options,
+  disabled = false,
+  hint,
+  placeholder,
+ }: StationAutocompleteProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const inputRef = useRef <HTMLInputElement>(null)
 
   const matches = value
   ? options.filter((option) => option.toLowerCase().includes(value.toLowerCase())).slice(0, 10)
   : options.slice(0, 10)
 
+  //Force the user to choose only defined destination for a specific origin instead of all suggested stations
+  useEffect(()=>{
+    const isInvalid = value !== '' && options.length>0 && !options.includes(value)
+    inputRef.current?.setCustomValidity(isInvalid ? 'Please choose a station from the list': '')
+  })
+
   return (
     <label className="flex flex-col gap-1 text-sm relative">
       {label}
       <input
+        ref={inputRef}
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onFocus={() => setIsOpen(true)}
         onBlur={() => setIsOpen(false)}
+        disabled = {disabled}
+        placeholder={placeholder}
         required
         autoComplete="off"
-        className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
+        className="bg-panel border border-line rounded-md px-3 py-2 text-primary disabled:opacity-50"
       />
+            {hint && <span className="text-xs text-muted">{hint}</span>}
       {isOpen && matches.length > 0 && (
         <ul className="absolute top-full left-0 right-0 mt-1 bg-panel border border-line rounded-md shadow-lg z-10 max-h-48 overflow-y-auto">
           {matches.map((match) => (

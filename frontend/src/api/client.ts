@@ -56,6 +56,22 @@ export async function getStations(): Promise<string[]> {
   return data.stations
 }
 
+//Getting the defined destination for the specific origin
+export async function getDestinations(origin : string) : Promise <string[]> {
+  const query = new URLSearchParams({origin})
+  const response = await fetch(`${BASE_URL}/stations/destinations?${query.toString()}`)
+
+  if(!response.ok){
+    const body = await response.json().catch(()=>null)
+    const message = body?.detail ?? `Request failed with status ${response.status}`
+    throw new ApiError(response.status,message)
+  }
+
+  const data = await response.json()
+  return data.destinations
+  
+}
+
 function toTrainStatsDate(isoDate: string): string {
   const [year, month, day] = isoDate.split('-')
   return `${day}_${month}_${year}`
