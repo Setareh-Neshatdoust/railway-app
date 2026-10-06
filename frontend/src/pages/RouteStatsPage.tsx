@@ -1,10 +1,11 @@
 
-import { useState } from 'react'
-import { getRouteStats, ApiError } from '../api/client'
-import type { RouteStatsResponse } from '../api/types'
+import { getRouteStats } from '../api/client'
 import { RouteSearchForm, type RouteSearchValues } from '../components/RouteSearchForm'
 import { ErrorMessage } from '../components/ErrorMessage'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
+import { useMemo } from 'react'
+import { useApiRequest } from '../hooks/useApiRequest'
+import { routeSearchFromUrl, routeSearchToUrl } from '../routes/searchParams'
 
 function formatValue(value: number | null, suffix = ''): string {
   if (value === null) return '—'
@@ -34,47 +35,28 @@ function StatCard({ label, value, colorClass }: StatCardProps) {
 }
 
 export function RouteStatsPage() {
-  const [result, setResult] = useState<RouteStatsResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [searchedOrigin, setSearchedOrigin] = useState('')
-  const [searchedStartDate, setSearchedStartDate] = useState('')
 
-  async function handleSearch(values: RouteSearchValues) {
-  setIsLoading(true)
-  setError(null)
-  setResult(null)
-  setSearchedOrigin(values.origin)
-  setSearchedOrigin(values.origin)
-  setSearchedStartDate(values.startDate)
-
-  try {
-    const data = await getRouteStats({ 
-      origin:values.origin, 
-      destination:values.destination, 
-      startDate:values.startDate, 
-      endDate:values.endDate
-     })
-    setResult(data)
-  } catch (err) {
-    if (err instanceof ApiError) {
-      setError(err.message)
-    } else {
-      setError('Something unexpected went wrong.')
-    }
-  } finally {
-    setIsLoading(false)
-  }
+  const [searchParams,setSearchParams] = useSearchParams()
+  const search = useMemo(()=>routeSearchFromUrl(searchParams),[setSearchParams])
+  const {data: result, error, isLoading} = useApiRequest(search,getRouteStats)
+  
+  function handleSearch(values: RouteSearchValues) {
+    setSearchParams(routeSearchToUrl(values))
 }
 return (
   <div className="p-6 max-w-3xl">
     <h2 className="text-base font-medium mb-4">Route statistics</h2>
 
-    <RouteSearchForm onSubmit={handleSearch} isLoading={isLoading} />
+     <RouteSearchForm
+        key={searchParams.toString()}
+        initialValues={search}
+        onSubmit={handleSearch}
+        isLoading={isLoading}
+      />
 
    {error && <ErrorMessage message={error} />}
 
-      {result && (
+      {result && search && (
   <div>
     <div className="grid grid-cols-3 gap-3 mb-6">
       <StatCard
@@ -99,7 +81,7 @@ return (
       {result.by_train.map((train) => (
         <div key={train.train_number} className="flex items-center px-4 py-2 text-sm">
           <Link
-            to={`/stops?train_number=${encodeURIComponent(train.train_number)}&origin=${encodeURIComponent(searchedOrigin)}&travel_date=${encodeURIComponent(searchedStartDate)}`}
+            to={`/stops?train_number=${encodeURIComponent(train.train_number)}&origin=${encodeURIComponent(search.origin)}&travel_date=${encodeURIComponent(search.startDate)}`}
             className="flex-1 text-accent hover:underline"
            >
             {train.train_number} ({train.category})
@@ -115,6 +97,4 @@ return (
 )}
   </div>
 )
-
-
 }

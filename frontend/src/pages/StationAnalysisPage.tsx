@@ -1,8 +1,11 @@
-import { useState } from 'react'
-import { getRouteStats, ApiError } from '../api/client'
-import type { RouteStatsResponse, StationStats } from '../api/types'
+import { getRouteStats} from '../api/client'
+import type { StationStats } from '../api/types'
 import { RouteSearchForm, type RouteSearchValues } from '../components/RouteSearchForm'
 import { ErrorMessage } from '../components/ErrorMessage'
+import { useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import { useApiRequest } from '../hooks/useApiRequest'
+import { routeSearchFromUrl, routeSearchToUrl } from '../routes/searchParams'
 
 function formatValue(value: number | null, suffix = ''): string {
   if (value === null) return '—'
@@ -37,33 +40,17 @@ function StationRow({ station }: { station: StationStats }) {
 }
 
 export function StationAnalysisPage() {
-  const [result, setResult] = useState<RouteStatsResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const[searchParams, setSearchParams] = useSearchParams()
 
-  async function handleSearch(values: RouteSearchValues) {
-    setIsLoading(true)
-    setError(null)
-    setResult(null)
+  const search = useMemo (()=>{
+    const values = routeSearchFromUrl(searchParams)
+    return values ? { ...values, includeStation: true} :null
+  },[searchParams])
+  const {data: result ,error, isLoading} = useApiRequest(search, getRouteStats)
 
-    try {
-      const data = await getRouteStats({
-        origin: values.origin,
-        destination: values.destination,
-        startDate: values.startDate,
-        endDate: values.endDate,
-        includeStations: true,
-      })
-      setResult(data)
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message)
-      } else {
-        setError('Something unexpected went wrong.')
-      }
-    } finally {
-      setIsLoading(false)
-    }
+  function handleSearch(values: RouteSearchValues) {
+
+    setSearchParams(routeSearchToUrl(values))
   }
 
   return (
@@ -73,7 +60,11 @@ export function StationAnalysisPage() {
         Delay and punctuality at every intermediate station along the route.
       </p>
 
-      <RouteSearchForm onSubmit={handleSearch} isLoading={isLoading} />
+      <RouteSearchForm 
+      key={searchParams.toString()}
+      initialValues={search}
+      onSubmit={handleSearch} 
+      isLoading={isLoading} />
 
      {error && <ErrorMessage message={error} />}
 

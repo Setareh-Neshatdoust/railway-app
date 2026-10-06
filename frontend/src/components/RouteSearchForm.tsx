@@ -13,13 +13,14 @@ export interface RouteSearchValues {
 interface RouteSearchFormProps {
   onSubmit: (values: RouteSearchValues) => void
   isLoading: boolean
+  initialValues?: RouteSearchValues | null
 }
 
-export function RouteSearchForm({ onSubmit, isLoading }: RouteSearchFormProps) {
-  const [origin, setOrigin] = useState('')
-  const [destination, setDestination] = useState('')
-  const [startDate, setStartDate] = useState('')
-  const [endDate, setEndDate] = useState('')
+export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSearchFormProps) {
+  const [origin, setOrigin] = useState(initialValues?.origin ?? '')
+  const [destination, setDestination] = useState(initialValues?.destination?? '')
+  const [startDate, setStartDate] = useState(initialValues?.startDate?? '')
+  const [endDate, setEndDate] = useState(initialValues?.endDate ?? '')
 
   const { stations } = useStations()
 

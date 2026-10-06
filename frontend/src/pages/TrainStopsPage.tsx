@@ -1,9 +1,11 @@
-import { useEffect,useState } from 'react'
-import { getTrainStops, ApiError } from '../api/client'
-import type { TrainStopsResponse, TrainStop } from '../api/types'
+import { getTrainStops} from '../api/client'
+import type {TrainStop } from '../api/types'
 import { TrainStopsSearchForm, type TrainStopsSearchValues } from '../components/TrainStopsSearchForm'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { useSearchParams } from 'react-router-dom'
+import { useMemo } from 'react'
+import { useApiRequest } from '../hooks/useApiRequest'
+import { trainStopsSearchfromUrl, trainStopsSearchToUrl } from '../routes/searchParams'
 
 function displayValue(value: string | null): string {
   return value ? value : '—'
@@ -26,43 +28,15 @@ function StopRow({ stop }: { stop: TrainStop }) {
 }
 
 export function TrainStopsPage() {
-  const [searchParams] = useSearchParams()
-  const initialTrainNumber = searchParams.get('train_number') ?? ''
-  const initialOrigin = searchParams.get('origin') ?? ''
-  const initialTravelDate = searchParams.get('travel_date')?? ''
-  const [result, setResult] = useState<TrainStopsResponse | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [searchParams,setSearchParams] = useSearchParams()
+  const search = useMemo(()=>trainStopsSearchfromUrl(searchParams),[searchParams])
+  const {data:result, error, isLoading} = useApiRequest(search, getTrainStops)
+  
+  function handleSearch(values: TrainStopsSearchValues) {
+    setSearchParams(trainStopsSearchToUrl(values))
 
-  async function handleSearch(values: TrainStopsSearchValues) {
-    setIsLoading(true)
-    setError(null)
-    setResult(null)
-
-    try {
-      const data = await getTrainStops(values)
-      setResult(data)
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message)
-      } else {
-        setError('Something unexpected went wrong.')
-      }
-    } finally {
-      setIsLoading(false)
-    }
   }
-  useEffect(() => {
-    if (initialTrainNumber && initialOrigin && initialTravelDate){
-        handleSearch
-        ({
-            trainNumber: initialTrainNumber,
-            origin: initialOrigin,
-            travelDate: initialTravelDate
-        })
-    }
-  }, [searchParams.toString()])
-
+  
   return (
     <div className="p-6 max-w-4xl">
       <h2 className="text-base font-medium mb-1">Train stops</h2>
@@ -74,9 +48,9 @@ export function TrainStopsPage() {
         key={searchParams.toString()}
         onSubmit={handleSearch}
         isLoading={isLoading}
-        initialTrainNumber={initialTrainNumber}
-        initialOrigin={initialOrigin} 
-        initialTravelDate={initialTravelDate}
+        initialTrainNumber={search?.trainNumber}
+        initialOrigin={search?.origin} 
+        initialTravelDate={search?.travelDate}
         />
 
       {error && <ErrorMessage message={error} />}
