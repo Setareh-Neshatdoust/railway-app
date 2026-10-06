@@ -44,7 +44,7 @@ export function StationAnalysisPage() {
 
   const search = useMemo (()=>{
     const values = routeSearchFromUrl(searchParams)
-    return values ? { ...values, includeStation: true} :null
+    return values ? { ...values, includeStations: true} :null
   },[searchParams])
   const {data: result ,error, isLoading} = useApiRequest(search, getRouteStats)
 

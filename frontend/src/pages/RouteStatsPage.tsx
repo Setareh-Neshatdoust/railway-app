@@ -37,7 +37,7 @@ function StatCard({ label, value, colorClass }: StatCardProps) {
 export function RouteStatsPage() {
 
   const [searchParams,setSearchParams] = useSearchParams()
-  const search = useMemo(()=>routeSearchFromUrl(searchParams),[setSearchParams])
+  const search = useMemo(()=>routeSearchFromUrl(searchParams),[searchParams])
   const {data: result, error, isLoading} = useApiRequest(search,getRouteStats)
   
   function handleSearch(values: RouteSearchValues) {

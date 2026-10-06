@@ -16,7 +16,8 @@ function StopRow({ stop }: { stop: TrainStop }) {
     <tr className="border-t border-line">
       <td className="px-3 py-2 font-mono text-muted">{stop.stop_number}</td>
       <td className="px-3 py-2">{stop.station}</td>
-      <td className="px-3 py-2 font-mono text-muted">{displayValue(stop.platform)}</td>
+      <td className="px-3 py-2 font-mono text-muted">{displayValue(stop.platform_scheduled)}</td>
+      <td className="px-3 py-2 font-mono text-muted">{displayValue(stop.platform_actual)}</td>
       <td className="px-3 py-2 font-mono">{displayValue(stop.arrival_scheduled)}</td>
       <td className="px-3 py-2 font-mono">{displayValue(stop.arrival_actual)}</td>
       <td className="px-3 py-2 font-mono">{displayValue(stop.arrival_delay)}</td>
@@ -62,7 +63,7 @@ export function TrainStopsPage() {
               <tr className="bg-panel text-left text-xs text-muted">
                 <th className="px-3 py-2 font-medium" rowSpan={2}>#</th>
                 <th className="px-3 py-2 font-medium" rowSpan={2}>Station</th>
-                <th className="px-3 py-2 font-medium" rowSpan={2}>Platform</th>
+                <th className="px-3 py-2 font-medium" colSpan={2}>Platform</th>
                 <th className="px-3 py-2 font-medium text-center" colSpan={3}>Arrival</th>
                 <th className="px-3 py-2 font-medium text-center" colSpan={3}>Departure</th>
               </tr>
@@ -70,6 +71,8 @@ export function TrainStopsPage() {
                 <th className="px-3 py-1 font-medium">Sched.</th>
                 <th className="px-3 py-1 font-medium">Actual</th>
                 <th className="px-3 py-1 font-medium">Delay</th>
+                <th className="px-3 py-1 font-medium">sched</th>
+                <th className="px-3 py-1 font-medium">Actual</th>
                 <th className="px-3 py-1 font-medium">Sched.</th>
                 <th className="px-3 py-1 font-medium">Actual</th>
                 <th className="px-3 py-1 font-medium">Delay</th>

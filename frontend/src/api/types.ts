@@ -38,7 +38,8 @@ export interface RouteStatsResponse {
 export interface TrainStop {
   stop_number: string
   station: string
-  platform: string | null
+  platform_scheduled: string | null
+  platform_actual: string| null
   arrival_scheduled: string
   arrival_actual: string
   arrival_delay: string

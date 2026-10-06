@@ -1,7 +1,7 @@
 import re
 import json
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from bs4 import BeautifulSoup
 from fastapi import HTTPException
@@ -50,6 +50,24 @@ def parse_relation_html(html: str) -> List[Dict[str, Any]]:
     return trains
 
 
+PLATFORM_UNKNOWN = ("ND", "N.D", "-")
+
+def split_platform(text:str) -> Tuple[Optional[str], Optional[str]]:
+
+    """ Trainstats holds two number as platform number one for scheduled one the other for actual in one cell,
+    it needs to be separated for user to get the meaningfull data
+    """
+    parts = text.split()
+    scheduled = parts[0] if len(parts)>0 else None
+    actual = parts[1] if len(parts)>1 else None
+    if scheduled and scheduled.upper() in PLATFORM_UNKNOWN:
+        scheduled = None
+    if actual and actual.upper() in PLATFORM_UNKNOWN:
+        actual = None
+
+    return scheduled,actual
+    
+
 def parse_train_stops_html(html: str) -> List[Dict[str, Any]]:
     if "Fatal error" in html:
         return []
@@ -69,12 +87,17 @@ def parse_train_stops_html(html: str) -> List[Dict[str, Any]]:
         offset = 1 if has_platform else 0
 
         for row in table.find_all("tr")[1:]:
-            cells = [c.get_text(strip=True) for c in row.find_all(["td", "th"])]
+            cell_tags = row.find_all (["td", "th"])
+            cells = [c.get_text(strip=True) for c in cell_tags]
             if len(cells) < 4:
                 continue
+            platform_text = cell_tags[2].get_text(" ", strip=True) if has_platform and len(cell_tags)>2 else ""
+            platform_scheduled , platform_actual = split_platform(platform_text)
             stops.append({
                 "stop_number":          cells[0] if len(cells) > 0 else None,
                 "station":              cells[1] if len(cells) > 1 else None,
+                "platform_scheduled":   platform_scheduled,
+                "platform_actual":      platform_actual,
                 "platform":             cells[2] if has_platform and len(cells) > 2 else None,
                 "arrival_scheduled":    cells[2 + offset] if len(cells) > 2 + offset else None,
                 "arrival_actual":       cells[3 + offset] if len(cells) > 3 + offset else None,
