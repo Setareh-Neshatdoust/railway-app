@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useStations } from '../hooks/useStations'
 import { StationAutocomplete } from './StationAutocomplete'
+import { ItalianDateInput } from './ItalianDateInput'
 
 export interface TrainStopsSearchValues {
   trainNumber: string
@@ -53,17 +54,13 @@ export function TrainStopsSearchForm({
         options={stations}
       />
 
-      <label className="flex flex-col gap-1 text-sm">
-        Travel date
-        <input
-          type="date"
-          value={travelDate}
-          onChange={(e) => setTravelDate(e.target.value)}
-          required
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
-        />
-      </label>
-
+      <ItalianDateInput
+        label="Travel date"
+        value={travelDate}
+        onChange={setTravelDate}
+        required
+      />
+      
       <button
         type="submit"
         disabled={isLoading}

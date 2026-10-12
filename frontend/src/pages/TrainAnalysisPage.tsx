@@ -9,6 +9,8 @@ import { trainAnalysisFromUrl, trainStopsSearchToUrl } from "../routes/searchPar
 import { DownloadButton } from "../components/DownloadButton";
 import { downloadCsv,downloadJson, makeFileName } from "../utils/exports";
 import { STATION_COLUMNS } from "../utils/exportColumns";
+import { ItalianDateInput } from "../components/ItalianDateInput";
+import { formatItalianDate } from "../utils/dates";
 
 export function TrainAnalysisPage (){
     const [searchParams] = useSearchParams()
@@ -24,12 +26,13 @@ export function TrainAnalysisPage (){
             </div>
         )
     }
-        const baseName = makeFileName(['train', train.trainNumber, train.origin, train.destination, train.startDate, train.endDate])
+        const baseName = makeFileName(['train', train.trainNumber, train.origin, train.destination, formatItalianDate(train.startDate), formatItalianDate(train.endDate)])
     return (
+
     <div className="p-6 max-w-3xl">
       <h2 className="text-base font-medium mb-1">Train {train.trainNumber}</h2>
       <p className="text-sm text-muted mb-4">
-        {train.origin} → {train.destination}, {train.startDate} to {train.endDate}
+        {train.origin} → {train.destination}, {formatItalianDate(train.startDate)} to {formatItalianDate(train.endDate)}
       </p>
 
       {isLoading && <p className="text-sm text-muted">Loading… </p>}
@@ -37,7 +40,7 @@ export function TrainAnalysisPage (){
 
       {result && (
         <>
-                  <div className="flex gap-2 mb-4">
+          <div className="flex gap-2 mb-4">
             <DownloadButton
               label="Stops (CSV)"
               onClick={() => downloadCsv(`${baseName}_stops.csv`, result.by_station, STATION_COLUMNS)}
@@ -63,13 +66,12 @@ export function TrainAnalysisPage (){
 
       <h3 className="text-sm text-muted mb-2">One day in detail (all stops, platforms)</h3>
       <div className="flex gap-3 items-center">
-        <input
-          type="date"
+        <ItalianDateInput
+          label="Day"
           value={dayToOpen}
+          onChange={setDayToOpen}
           min={train.startDate}
           max={train.endDate}
-          onChange={(e) => setDayToOpen(e.target.value)}
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary text-sm"
         />
         {dayToOpen && (
           <Link

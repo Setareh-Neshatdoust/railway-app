@@ -9,10 +9,9 @@ function App() {
     <div className="min-h-screen bg-page text-primary">
       <header className="border-b border-line px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <h1 className="text-lg font-medium">Italian railway performance</h1>
-          <nav className="flex gap-4 text-sm">
-            <Link to="/" className="text-muted hover:text-primary">Route Analysis</Link>
-          </nav>
+          <h1 className="text-lg font-medium">
+            <Link to="/" className="hover:text-accent">Italian railway performance</Link>
+          </h1>
         </div>
         <ThemeToggleButton isDark={isDark} onToggle={toggleTheme} />
       </header>

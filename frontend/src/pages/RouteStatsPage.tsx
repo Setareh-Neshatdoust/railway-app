@@ -12,6 +12,7 @@ import { StationTable } from '../components/StationTable'
 import { DownloadButton } from '../components/DownloadButton'
 import { downloadCsv, downloadJson, makeFileName } from '../utils/exports'
 import { STATION_COLUMNS, TRAIN_COLUMNS } from '../utils/exportColumns'
+import { formatItalianDate } from '../utils/dates'
 
 export function RouteStatsPage() {
 
@@ -19,7 +20,7 @@ export function RouteStatsPage() {
   const search = useMemo(()=>routeSearchFromUrl(searchParams),[searchParams])
   const {data: result, error, isLoading} = useApiRequest(search,getRouteStats)
   const baseName = 
-  search ? makeFileName(['route', search.origin, search.destination, search.startDate, search.endDate])
+  search ? makeFileName(['route', search.origin, search.destination, formatItalianDate(search.startDate), formatItalianDate(search.endDate)])
     : ''
   
   function handleSearch(values: RouteSearchValues) {
@@ -27,7 +28,7 @@ export function RouteStatsPage() {
 }
 return (
   <div className="p-6 max-w-3xl">
-    <h2 className="text-base font-medium mb-4">Route statistics</h2>
+    <h2 className="text-base font-medium mb-4">Route analysis</h2>
 
      <RouteSearchForm
         key={searchParams.toString()}

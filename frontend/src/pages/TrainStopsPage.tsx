@@ -9,6 +9,7 @@ import { trainStopsSearchfromUrl, trainStopsSearchToUrl } from '../routes/search
 import { DownloadButton } from '../components/DownloadButton'
 import { downloadCsv, downloadJson, makeFileName } from '../utils/exports' 
 import { STOP_COLUMNS } from '../utils/exportColumns'
+import { formatItalianDate } from '../utils/dates'
 
 function displayValue(value: string | null): string {
   return value ? value : '—'
@@ -63,11 +64,11 @@ export function TrainStopsPage() {
         <div className="flex gap-2 mb-4">
           <DownloadButton
             label="Stops (CSV)"
-            onClick={() => downloadCsv(`${makeFileName(['stops', search.trainNumber, search.origin, search.travelDate])}.csv`, result.stops, STOP_COLUMNS)}
+            onClick={() => downloadCsv(`${makeFileName(['stops', search.trainNumber, search.origin, formatItalianDate(search.travelDate)])}.csv`, result.stops, STOP_COLUMNS)}
           />
           <DownloadButton
             label="JSON"
-            onClick={() => downloadJson(`${makeFileName(['stops', search.trainNumber, search.origin, search.travelDate])}.json`, {
+            onClick={() => downloadJson(`${makeFileName(['stops', search.trainNumber, search.origin, formatItalianDate(search.travelDate)])}.json`, {
               source: 'TrainStats (trainstats.altervista.org)',
               generated_at: new Date().toISOString(),
               ...result,

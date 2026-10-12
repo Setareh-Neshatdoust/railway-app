@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useStations } from '../hooks/useStations'
 import { StationAutocomplete } from './StationAutocomplete'
 import { useDestinations } from '../hooks/useDestinations'
+import { ItalianDateInput } from './ItalianDateInput'
 
 export interface RouteSearchValues {
   origin: string
@@ -64,28 +65,21 @@ export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSea
         hint={destinationHint}
       />
 
-      <label className="flex flex-col gap-1 text-sm">
-        Start date
-        <input
-          type="date"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          required
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
-        />
-      </label>
+      <ItalianDateInput
+        label="Start date"
+        value={startDate}
+        onChange={setStartDate}
+        required
+      />
 
-      <label className="flex flex-col gap-1 text-sm">
-        End date
-        <input
-          type="date"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          required
-          className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
-        />
-      </label>
-
+      <ItalianDateInput
+        label="End date"
+        value={endDate}
+        onChange={setEndDate}
+        min={startDate}
+        required
+      />
+      
       <label>
         <input
         type='checkbox'

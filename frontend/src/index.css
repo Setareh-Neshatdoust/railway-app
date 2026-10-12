@@ -58,3 +58,33 @@ body {
   font-family: var(--font-sans);
   transition: background-color 0.15s ease, color 0.15s ease;
 }
+
+
+/* Calendar of the date picker (react-datepicker) in the app's colours,in ordet to follow dark mode */
+.react-datepicker {
+  font-family: inherit;
+  background-color: var(--rt-panel);
+  border-color: var(--rt-line);
+  color: var(--rt-primary);
+}
+.react-datepicker__header {
+  background-color: var(--rt-page);
+  border-bottom-color: var(--rt-line);
+}
+.react-datepicker__current-month,
+.react-datepicker__day-name,
+.react-datepicker__day {
+  color: var(--rt-primary);
+}
+.react-datepicker__day:hover {
+  background-color: var(--rt-line);
+}
+.react-datepicker__day--selected,
+.react-datepicker__day--keyboard-selected {
+  background-color: var(--rt-accent);
+  color: #fff;
+}
+.react-datepicker__day--disabled {
+  color: var(--rt-muted);
+  opacity: 0.4;
+}
