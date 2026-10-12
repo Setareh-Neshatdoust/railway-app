@@ -12,6 +12,26 @@ export class ApiError extends Error {
   }
 }
 
+const responseCache = new Map<string,Promise<unknown>>()
+
+function fetchJasonCahched <T>(url: string): Promise<T> {
+  const cached = responseCache.get(url)
+  if (cached) return cached as Promise<T>
+
+  const request = fetch(url). then (async (response) => {
+    if (!response.ok) {
+      const body = await response.json().catch(() => null)
+      const message = body?.detail?? `Request failed with status ${response.status}`
+      throw new ApiError(response.status,message)
+    }
+    return response.json() as Promise<T>
+  })
+
+responseCache.set(url, request)
+request.catch(()=> responseCache.delete(url))
+return request
+}
+
 export interface RouteStatsParams {
   origin: string
   destination: string
@@ -35,16 +55,8 @@ export async function getRouteStats(params: RouteStatsParams): Promise<RouteStat
     query.set('on_time_threshold_minutes', String(params.onTimeThresholdMinutes))
   }
   if (params.includeStations) query.set('include_stations', 'true')
+    return fetchJasonCahched<RouteStatsResponse>(`${BASE_URL}/route/stats?${query.toString()}`)
 
-  const response = await fetch(`${BASE_URL}/route/stats?${query.toString()}`)
-
-  if (!response.ok) {
-    const body = await response.json().catch(() => null)
-    const message = body?.detail ?? `Request failed with status ${response.status}`
-    throw new ApiError(response.status, message)
-  }
-
-  return response.json()
 }
 
 export async function getStations(): Promise<string[]> {
@@ -89,14 +101,6 @@ export async function getTrainStops(params: TrainStopsParams): Promise<TrainStop
     origin: params.origin,
     travel_date: toTrainStatsDate(params.travelDate),
   })
+  return fetchJasonCahched<TrainStopsResponse>(`${BASE_URL}/train/stops?${query.toString()}`)
 
-  const response = await fetch(`${BASE_URL}/train/stops?${query.toString()}`)
-
-  if (!response.ok) {
-    const body = await response.json().catch(() => null)
-    const message = body?.detail ?? `Request failed with status ${response.status}`
-    throw new ApiError(response.status, message)
-  }
-
-  return response.json()
 }

@@ -5,34 +5,10 @@ import { ErrorMessage } from '../components/ErrorMessage'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useMemo } from 'react'
 import { useApiRequest } from '../hooks/useApiRequest'
-import { routeSearchFromUrl, routeSearchToUrl } from '../routes/searchParams'
-
-function formatValue(value: number | null, suffix = ''): string {
-  if (value === null) return '—'
-  return `${value}${suffix}`
-}
-
-function getPercentageColor(pct: number | null): string {
-  if (pct === null) return 'text-signal-neutral'
-  if (pct >= 80) return 'text-signal-good'
-  if (pct >= 50) return 'text-signal-warn'
-  return 'text-signal-bad'
-}
-
-interface StatCardProps {
-  label: string
-  value: string
-  colorClass: string
-}
-
-function StatCard({ label, value, colorClass }: StatCardProps) {
-  return (
-    <div className="bg-panel border border-line rounded-md p-3">
-      <div className="text-xs text-muted mb-1.5">{label}</div>
-      <div className={`font-mono text-2xl font-medium ${colorClass}`}>{value}</div>
-    </div>
-  )
-}
+import { routeSearchFromUrl, routeSearchToUrl, trainAnalysisToUrl } from '../routes/searchParams'
+import { formatValue, getPercentageColor } from '../utils/format'
+import { StatsSummary } from '../components/StatsSummary'
+import { StationTable } from '../components/StationTable'
 
 export function RouteStatsPage() {
 
@@ -58,30 +34,13 @@ return (
 
       {result && search && (
   <div>
-    <div className="grid grid-cols-3 gap-3 mb-6">
-      <StatCard
-        label="On-time"
-        value={formatValue(result.overall.on_time_percentage, '%')}
-        colorClass={getPercentageColor(result.overall.on_time_percentage)}
-      />
-      <StatCard
-        label="Avg arrival delay"
-        value={formatValue(result.overall.avg_arrival_delay_min, 'm')}
-        colorClass="text-signal-warn"
-      />
-      <StatCard
-        label="Cancelled"
-        value={formatValue(result.overall.cancellation_rate_pct, '%')}
-        colorClass={result.overall.cancellation_rate_pct ? 'text-signal-bad' : 'text-signal-good'}
-      />
-    </div>
-
+     <StatsSummary summary={result.overall}/>
     <h3 className="text-sm text-muted mb-2">By train ({result.trains_analyzed} analyzed)</h3>
     <div className="border border-line rounded-md divide-y divide-line">
       {result.by_train.map((train) => (
         <div key={train.train_number} className="flex items-center px-4 py-2 text-sm">
           <Link
-            to={`/stops?train_number=${encodeURIComponent(train.train_number)}&origin=${encodeURIComponent(search.origin)}&travel_date=${encodeURIComponent(search.startDate)}`}
+            to={`train?${new URLSearchParams(trainAnalysisToUrl({...search, trainNumber: train.train_number}))}`}
             className="flex-1 text-accent hover:underline"
            >
             {train.train_number} ({train.category})
@@ -93,6 +52,12 @@ return (
         </div>
       ))}
     </div>
+    {search.includeStations && (
+      <>
+      <h3 className="text-sm text-muted mb-2"> By Station (all trains)</h3>
+      <StationTable stations={result.by_station}/>
+        </>
+    )}
   </div>
 )}
   </div>

@@ -8,6 +8,7 @@ export interface RouteSearchValues {
   destination: string
   startDate: string
   endDate: string
+  includeStations: boolean
 }
 
 interface RouteSearchFormProps {
@@ -21,6 +22,7 @@ export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSea
   const [destination, setDestination] = useState(initialValues?.destination?? '')
   const [startDate, setStartDate] = useState(initialValues?.startDate?? '')
   const [endDate, setEndDate] = useState(initialValues?.endDate ?? '')
+  const [includeStations, setIncludeStations] = useState(initialValues?.includeStations?? false)
 
   const { stations } = useStations()
 
@@ -41,7 +43,7 @@ export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSea
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    onSubmit({ origin, destination, startDate, endDate })
+    onSubmit({ origin, destination, startDate, endDate, includeStations })
   }
 
   return (
@@ -82,6 +84,14 @@ export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSea
           required
           className="bg-panel border border-line rounded-md px-3 py-2 text-primary"
         />
+      </label>
+
+      <label>
+        <input
+        type='checkbox'
+        checked= {includeStations}
+        onChange={(e)=>setIncludeStations(e.target.checked)}/>
+        Include intermediate stations (slower: checks every train on every day)
       </label>
 
       <button

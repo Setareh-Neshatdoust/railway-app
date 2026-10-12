@@ -4,12 +4,14 @@ import type { TrainStopsSearchValues } from "../components/TrainStopsSearchForm"
 //A search found in the URL can be restored after browser's back button
 
 export function routeSearchToUrl (values : RouteSearchValues){
-    return{
+    const params : Record<string,string> = {
         origin : values.origin,
         destination : values.destination,
         start_date : values.startDate,
         end_date : values.endDate
     }
+    if(values.includeStations) params.stations = '1'
+    return params
 }
 
 export function routeSearchFromUrl (searchParams : URLSearchParams) : RouteSearchValues | null{
@@ -21,14 +23,15 @@ export function routeSearchFromUrl (searchParams : URLSearchParams) : RouteSearc
 
     if(!origin || !destination || !startDate || !endDate) 
         return null
-    return {origin, destination, startDate, endDate}
+    const includeStations= searchParams.get('stations') === '1'
+    return {origin, destination, startDate, endDate, includeStations}
 }
 
 export function trainStopsSearchToUrl (values : TrainStopsSearchValues){
     return {
         train_number : values.trainNumber,
         origin : values.origin,
-        tarvel_date: values.travelDate
+        travel_date: values.travelDate
     }
 }
 
@@ -41,4 +44,33 @@ export function trainStopsSearchfromUrl (searchParams : URLSearchParams) : Train
         return null
     
     return{trainNumber, origin, travelDate}  
+}
+
+//Train analysis, one train on one route over a date range
+export interface TrainAnalysisValues{
+    trainNumber : string
+    origin : string
+    destination : string
+    startDate : string
+    endDate : string
+}
+
+export function trainAnalysisToUrl (values : TrainAnalysisValues){
+    return{
+        train_number : values.trainNumber,
+        origin : values.origin,
+        destination : values.destination,
+        start_date : values.startDate,
+        end_date : values.endDate
+    }
+}
+export function trainAnalysisFromUrl(searchParams : URLSearchParams) : TrainAnalysisValues | null{
+    const trainNumber = searchParams.get('train_number')
+    const origin = searchParams.get('origin')
+    const destination = searchParams.get('destination')
+    const startDate = searchParams.get('start_date')
+    const endDate = searchParams.get('end_date')
+    if(!trainNumber || !origin || !destination || !startDate || !endDate)
+        return null
+    return {trainNumber, origin, destination, startDate, endDate}
 }

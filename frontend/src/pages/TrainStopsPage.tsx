@@ -63,16 +63,16 @@ export function TrainStopsPage() {
               <tr className="bg-panel text-left text-xs text-muted">
                 <th className="px-3 py-2 font-medium" rowSpan={2}>#</th>
                 <th className="px-3 py-2 font-medium" rowSpan={2}>Station</th>
-                <th className="px-3 py-2 font-medium" colSpan={2}>Platform</th>
+                <th className="px-3 py-2 font-medium text-center" colSpan={2}>Platform</th>
                 <th className="px-3 py-2 font-medium text-center" colSpan={3}>Arrival</th>
                 <th className="px-3 py-2 font-medium text-center" colSpan={3}>Departure</th>
               </tr>
               <tr className="bg-panel text-left text-xs text-muted border-t border-line">
                 <th className="px-3 py-1 font-medium">Sched.</th>
                 <th className="px-3 py-1 font-medium">Actual</th>
-                <th className="px-3 py-1 font-medium">Delay</th>
-                <th className="px-3 py-1 font-medium">sched</th>
+                <th className="px-3 py-1 font-medium">Sched.</th>
                 <th className="px-3 py-1 font-medium">Actual</th>
+                <th className="px-3 py-1 font-medium">Delay</th>
                 <th className="px-3 py-1 font-medium">Sched.</th>
                 <th className="px-3 py-1 font-medium">Actual</th>
                 <th className="px-3 py-1 font-medium">Delay</th>
