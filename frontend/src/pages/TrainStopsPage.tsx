@@ -6,6 +6,9 @@ import { useSearchParams } from 'react-router-dom'
 import { useMemo } from 'react'
 import { useApiRequest } from '../hooks/useApiRequest'
 import { trainStopsSearchfromUrl, trainStopsSearchToUrl } from '../routes/searchParams'
+import { DownloadButton } from '../components/DownloadButton'
+import { downloadCsv, downloadJson, makeFileName } from '../utils/exports' 
+import { STOP_COLUMNS } from '../utils/exportColumns'
 
 function displayValue(value: string | null): string {
   return value ? value : '—'
@@ -55,6 +58,23 @@ export function TrainStopsPage() {
         />
 
       {error && <ErrorMessage message={error} />}
+
+            {result && search && (
+        <div className="flex gap-2 mb-4">
+          <DownloadButton
+            label="Stops (CSV)"
+            onClick={() => downloadCsv(`${makeFileName(['stops', search.trainNumber, search.origin, search.travelDate])}.csv`, result.stops, STOP_COLUMNS)}
+          />
+          <DownloadButton
+            label="JSON"
+            onClick={() => downloadJson(`${makeFileName(['stops', search.trainNumber, search.origin, search.travelDate])}.json`, {
+              source: 'TrainStats (trainstats.altervista.org)',
+              generated_at: new Date().toISOString(),
+              ...result,
+            })}
+          />
+        </div>
+      )}
 
       {result && (
         <div className="border border-line rounded-md overflow-x-auto">

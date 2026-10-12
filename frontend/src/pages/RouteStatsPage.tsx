@@ -9,12 +9,18 @@ import { routeSearchFromUrl, routeSearchToUrl, trainAnalysisToUrl } from '../rou
 import { formatValue, getPercentageColor } from '../utils/format'
 import { StatsSummary } from '../components/StatsSummary'
 import { StationTable } from '../components/StationTable'
+import { DownloadButton } from '../components/DownloadButton'
+import { downloadCsv, downloadJson, makeFileName } from '../utils/exports'
+import { STATION_COLUMNS, TRAIN_COLUMNS } from '../utils/exportColumns'
 
 export function RouteStatsPage() {
 
   const [searchParams,setSearchParams] = useSearchParams()
   const search = useMemo(()=>routeSearchFromUrl(searchParams),[searchParams])
   const {data: result, error, isLoading} = useApiRequest(search,getRouteStats)
+  const baseName = 
+  search ? makeFileName(['route', search.origin, search.destination, search.startDate, search.endDate])
+    : ''
   
   function handleSearch(values: RouteSearchValues) {
     setSearchParams(routeSearchToUrl(values))
@@ -34,6 +40,26 @@ return (
 
       {result && search && (
   <div>
+        <div className="flex gap-2 mb-4">
+      <DownloadButton
+        label="Trains (CSV)"
+        onClick={() => downloadCsv(`${baseName}_trains.csv`, result.by_train, TRAIN_COLUMNS)}
+      />
+      {search.includeStations && (
+        <DownloadButton
+          label="Stations (CSV)"
+          onClick={() => downloadCsv(`${baseName}_stations.csv`, result.by_station, STATION_COLUMNS)}
+        />
+      )}
+      <DownloadButton
+        label="All (JSON)"
+        onClick={() => downloadJson(`${baseName}.json`, {
+          source: 'TrainStats (trainstats.altervista.org)',
+          generated_at: new Date().toISOString(),
+          ...result,
+        })}
+      />
+    </div>
      <StatsSummary summary={result.overall}/>
     <h3 className="text-sm text-muted mb-2">By train ({result.trains_analyzed} analyzed)</h3>
     <div className="border border-line rounded-md divide-y divide-line">
