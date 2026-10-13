@@ -55,3 +55,18 @@ export interface TrainStopsResponse {
   total_stops: number
   stops: TrainStop[]
 }
+
+
+export interface SegmentTrainStats extends TrainStats {
+  train_origin: string
+  train_destination: string
+}
+
+export interface SegmentStatsResponse {
+  origin: string
+  destination: string
+  start_date: string
+  end_date: string
+  overall: RouteStatsSummary
+  by_train: SegmentTrainStats[]
+}

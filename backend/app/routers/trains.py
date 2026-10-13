@@ -14,6 +14,7 @@ from app.utils.html_parsing import (
     parse_train_details_html,
     parse_train_stops_html,
 )
+from app.services.station_names import stop_station_name
 
 router = APIRouter(prefix="/train", tags=["train"])
 
@@ -40,7 +41,7 @@ def get_train_stops(
     Get intermediate stops for a specific train from TrainStats.
     date format: DD_MM_YYYY (e.g. 29_04_2026)
     """
-    html = fetch_train_stops_html(train_number, travel_date, origin)
+    html = fetch_train_stops_html(train_number, travel_date, stop_station_name(origin, travel_date))
     stops = parse_train_stops_html(html)
     if not stops:
         raise HTTPException(

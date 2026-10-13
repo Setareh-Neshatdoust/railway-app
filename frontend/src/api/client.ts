@@ -1,5 +1,5 @@
 
-import type { RouteStatsResponse , TrainStopsResponse} from './types'
+import type { RouteStatsResponse , TrainStopsResponse, SegmentStatsResponse} from './types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -57,6 +57,23 @@ export async function getRouteStats(params: RouteStatsParams): Promise<RouteStat
   if (params.includeStations) query.set('include_stations', 'true')
     return fetchJasonCahched<RouteStatsResponse>(`${BASE_URL}/route/stats?${query.toString()}`)
 
+}
+
+export interface SegmentStatsParams {
+  origin: string
+  destination: string
+  startDate: string
+  endDate: string
+}
+
+export async function getSegmentStats(params: SegmentStatsParams): Promise<SegmentStatsResponse> {
+  const query = new URLSearchParams({
+    origin: params.origin,
+    destination: params.destination,
+    start_date: params.startDate,
+    end_date: params.endDate,
+  })
+  return fetchJasonCahched<SegmentStatsResponse>(`${BASE_URL}/route/segment?${query.toString()}`)
 }
 
 export async function getStations(): Promise<string[]> {

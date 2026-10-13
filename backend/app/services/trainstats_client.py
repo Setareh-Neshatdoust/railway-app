@@ -80,3 +80,35 @@ def fetch_destination_text(origin: str) -> str:
     )
     response.encoding = "utf-8"
     return response.text
+
+
+
+def fetch_stops_between_text(origin: str, destination: str, date_str: str) -> str:
+    """
+    The request behind TrainStats' "Cerca per fermate" page: every train that
+    stopped at origin and then at selected destination on one day.
+    """
+    response = requests.get(
+        f"{BASE_URL}/libs/getAPResults.php",
+        params={"sp": origin.upper(), "sa": destination.upper(), "data": date_str},
+        headers=DEFAULT_HEADERS,
+        timeout=REQUEST_TIMEOUT,
+    )
+    response.encoding = "utf-8"
+    return response.text
+
+
+def fetch_stop_station_list_text(date_str: str) -> str:
+    """
+    The station list behind TrainStats' "Cerca per fermate" page. Stop lists use
+    these spellings (e.g. TORINO PORTA NUOVA), the route search uses short ones
+    (e.g. TORINO P.NUOVA).
+    """
+    response = requests.get(
+        f"{BASE_URL}/libs/getStazioniList.php",
+        params={"data": date_str},
+        headers=DEFAULT_HEADERS,
+        timeout=REQUEST_TIMEOUT,
+    )
+    response.encoding = "utf-8"
+    return response.text

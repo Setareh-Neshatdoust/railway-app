@@ -197,4 +197,55 @@ def parse_destinations_text (text: str) -> List[str]:
     return sorted(set(name for name in names if name))
 
 
+
+CANCELLED_STOP_MARKS = ("S", "X")
+
+
+def parse_stops_between_json(text: str, origin: str, destination: str) -> List[Dict[str, Any]]:
+    """
+    Turns the JSON answer of getAPResults.php into one record per train, keeping
+    only what the statistics need: departure delay at origin, arrival delay at
+    destination, and whether the train was cancelled ("Soppresso")
+    """
+    try:
+        trains = json.loads(text)
+    except json.JSONDecodeError:
+        return []
+    if not isinstance(trains, list):
+        return []
+
+    records = []
+    for train in trains:
+        stops = train.get("fr") or []
+        names = [stop.get("n") for stop in stops]
+        origin_idx = next((i for i, name in enumerate(names) if same_name(name, origin)), None)
+        destination_idx = next((i for i, name in enumerate(names) if same_name(name, destination)), None)
+        if origin_idx is None or destination_idx is None or destination_idx <= origin_idx:
+            continue
+        origin_stop = stops[origin_idx]
+        destination_stop = stops[destination_idx]
+
+        departure_delay = origin_stop.get("rp")
+        arrival_delay = destination_stop.get("ra")
+        cancelled = (
+            "soppress" in (train.get("pr") or "").lower()
+            or departure_delay in CANCELLED_STOP_MARKS
+            or arrival_delay in CANCELLED_STOP_MARKS
+        )
+        records.append({
+            "train_number": train.get("n"),
+            "category": train.get("c"),
+            "train_origin": train.get("p"),
+            "train_destination": train.get("a"),
+            "departure_delay": departure_delay,
+            "arrival_delay": arrival_delay,
+            "status": "Soppresso" if cancelled else None,
+        })
+    return records
+
+
+def same_name(a: Optional[str], b: Optional[str]) -> bool:
+    return (a or "").strip().upper() == (b or "").strip().upper()
+
+
  

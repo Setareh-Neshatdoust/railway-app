@@ -74,3 +74,30 @@ export function trainAnalysisFromUrl(searchParams : URLSearchParams) : TrainAnal
         return null
     return {trainNumber, origin, destination, startDate, endDate}
 }
+
+//Segment analysis, from the origin to one intermediate stop over a date range
+export interface SegmentSearchValues{
+    origin : string
+    destination : string
+    startDate : string
+    endDate : string
+}
+
+export function segmentSearchToUrl (values : SegmentSearchValues){
+    return{
+        origin : values.origin,
+        destination : values.destination,
+        start_date : values.startDate,
+        end_date : values.endDate
+    }
+}
+
+export function segmentSearchFromUrl(searchParams : URLSearchParams) : SegmentSearchValues | null{
+    const origin = searchParams.get('origin')
+    const destination = searchParams.get('destination')
+    const startDate = searchParams.get('start_date')
+    const endDate = searchParams.get('end_date')
+    if(!origin || !destination || !startDate || !endDate)
+        return null
+    return {origin, destination, startDate, endDate}
+}

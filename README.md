@@ -12,15 +12,15 @@ A web application for analyzing Italian train performance data using TrainStats 
 
 ### Backend
 ```bash
-docker pull setarehneshatdoust/railway-opendata-webapp:v1.3
-docker run -p 8000:8000 setarehneshatdoust/railway-opendata-webapp:v1.3
+docker pull setarehneshatdoust/railway-opendata-webapp:v1.4
+docker run -p 8000:8000 setarehneshatdoust/railway-opendata-webapp:v1.4
 ```
 Then open http://localhost:8000/docs for the interactive API documentation.
 
 ### Frontend
 ```bash
-docker pull setarehneshatdoust/railway-frontend:v1.0
-docker run -p 3000:80 setarehneshatdoust/railway-frontend:v1.0
+docker pull setarehneshatdoust/railway-frontend:v1.1
+docker run -p 3000:80 setarehneshatdoust/railway-frontend:v1.1
 ```
 Then open http://localhost:3000. The backend must also be running (see above) on port 8000, since the frontend calls it directly from the browser.
 
