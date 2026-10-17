@@ -48,7 +48,7 @@ export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSea
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-6">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <StationAutocomplete
         label="Origin"
         value={origin}
@@ -80,18 +80,18 @@ export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSea
         required
       />
       
-      <label>
+      <label className="sm:col-span-2 flex items-center gap-2 text-sm">
         <input
         type='checkbox'
         checked= {includeStations}
         onChange={(e)=>setIncludeStations(e.target.checked)}/>
-        Include intermediate stations (slower: checks every train on every day)
+        Include intermediate stations (checks every train on every day)
       </label>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="col-span-2 bg-accent text-white rounded-md py-2 font-medium disabled:opacity-50"
+        className="sm:col-span-2 bg-accent text-white rounded-md py-2 font-medium disabled:opacity-50"
       >
         {isLoading ? 'Loading…' : 'Get stats'}
       </button>

@@ -1,7 +1,17 @@
 import type { RouteSearchValues } from "../components/RouteSearchForm";
 import type { TrainStopsSearchValues } from "../components/TrainStopsSearchForm";
 
+// Address of a page with its parameters; "back" is the page that opens it, for the Back link
+export function pageUrl(path: string, params: Record<string, string>, back?: string): string {
+    const all = back ? { ...params, back } : params
+    return `${path}?${new URLSearchParams(all)}`
+}
 //A search found in the URL can be restored after browser's back button
+// The page to go back to. Only addresses inside this app (starting with one "/") are accepted
+export function backFromUrl(searchParams: URLSearchParams): string {
+    const back = searchParams.get('back')
+    return back && back.startsWith('/') && !back.startsWith('//') ? back : '/'
+}
 
 export function routeSearchToUrl (values : RouteSearchValues){
     const params : Record<string,string> = {

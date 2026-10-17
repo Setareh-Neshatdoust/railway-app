@@ -1,19 +1,25 @@
 import { useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { getRouteStats } from "../api/client";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { StatsSummary } from "../components/StatsSummary";
 import { StationTable } from "../components/StationTable";
 import { useApiRequest } from "../hooks/useApiRequest";
-import { trainAnalysisFromUrl, trainStopsSearchToUrl } from "../routes/searchParams";
+import { pageUrl, trainAnalysisFromUrl, trainStopsSearchToUrl } from "../routes/searchParams";
 import { DownloadButton } from "../components/DownloadButton";
 import { downloadCsv,downloadJson, makeFileName } from "../utils/exports";
 import { STATION_COLUMNS } from "../utils/exportColumns";
 import { ItalianDateInput } from "../components/ItalianDateInput";
 import { formatItalianDate } from "../utils/dates";
+import { BackLink } from "../components/BackLink";
+import { Section } from "../components/Section";
+import { ChartSlot } from "../components/ChartSlot";
+import { PageNav } from "../components/PageNav";
 
 export function TrainAnalysisPage (){
     const [searchParams] = useSearchParams()
+    const location = useLocation()
+    const here = location.pathname + location.search
     const train = useMemo(()=> trainAnalysisFromUrl(searchParams), [searchParams])
     const params = useMemo(()=> (train?{... train, includeStations:true}: null), [train],)
     const {data : result , error, isLoading} = useApiRequest(params, getRouteStats)
@@ -21,26 +27,23 @@ export function TrainAnalysisPage (){
 
     if(!train){
         return (
-            <div className="p-6 max-w-3xl">
-                <ErrorMessage message="No train selected!"></ErrorMessage>
-            </div>
+            <ErrorMessage message="No train selected!"></ErrorMessage>
         )
     }
-        const baseName = makeFileName(['train', train.trainNumber, train.origin, train.destination, formatItalianDate(train.startDate), formatItalianDate(train.endDate)])
+    const period = `${formatItalianDate(train.startDate)} – ${formatItalianDate(train.endDate)}`
+    const baseName = makeFileName(['train', train.trainNumber, train.origin, train.destination, formatItalianDate(train.startDate), formatItalianDate(train.endDate)])
+
     return (
+    <div className="space-y-6">
+      <BackLink label="Back to route analysis" />
 
-    <div className="p-6 max-w-3xl">
-      <h2 className="text-base font-medium mb-1">Train {train.trainNumber}</h2>
-      <p className="text-sm text-muted mb-4">
-        {train.origin} → {train.destination}, {formatItalianDate(train.startDate)} to {formatItalianDate(train.endDate)}
-      </p>
-
-      {isLoading && <p className="text-sm text-muted">Loading… </p>}
-      {error && <ErrorMessage message={error} />}
-
-      {result && (
-        <>
-          <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-medium">Train {train.trainNumber}</h2>
+          <p className="text-sm text-muted mt-1">{train.origin} → {train.destination} · {period}</p>
+        </div>
+        {result && (
+          <div className="flex flex-wrap gap-2">
             <DownloadButton
               label="Stops (CSV)"
               onClick={() => downloadCsv(`${baseName}_stops.csv`, result.by_station, STATION_COLUMNS)}
@@ -55,33 +58,59 @@ export function TrainAnalysisPage (){
               })}
             />
           </div>
-          <StatsSummary summary={result.overall} />
+        )}
+      </div>
 
-          <h3 className="text-sm text-muted mb-2">At every stop on the path</h3>
-          <div className="mb-6">
-            <StationTable stations={result.by_station} />
-          </div>
+      {isLoading && <p className="text-sm text-muted">Loading… </p>}
+      {error && <ErrorMessage message={error} />}
+
+      {result && (
+        <>
+          <PageNav items={[
+            { id: 'summary', label: 'Summary' },
+            { id: 'over-time', label: 'Over time' },
+            { id: 'stops', label: 'Stops' },
+            { id: 'one-day', label: 'One day' },
+          ]} />
+
+          <StatsSummary summary={result.overall} period={period} />
+
+          <Section id="over-time" title="Over time">
+            <ChartSlot
+              title="Arrival delay of this train by day"
+              shows="One point per day in the period, with the on-time limit drawn as a reference line."
+            />
+          </Section>
+
+          <Section id="stops" title="At every stop on the path" description={`Averages over ${period}.`}>
+            <ChartSlot
+              title="Average delay along the stops"
+              shows="Stops in travel order on the horizontal axis, average delay on the vertical axis."
+            />
+            <StationTable stations={result.by_station} threshold={result.overall.on_time_threshold_minutes} />
+          </Section>
         </>
       )}
 
-      <h3 className="text-sm text-muted mb-2">One day in detail (all stops, platforms)</h3>
-      <div className="flex gap-3 items-center">
-        <ItalianDateInput
-          label="Day"
-          value={dayToOpen}
-          onChange={setDayToOpen}
-          min={train.startDate}
-          max={train.endDate}
-        />
-        {dayToOpen && (
-          <Link
-            to={`/stops?${new URLSearchParams(trainStopsSearchToUrl({ trainNumber: train.trainNumber, origin: train.origin, travelDate: dayToOpen }))}`}
-            className="text-accent hover:underline text-sm"
-          >
-            Open this day
-          </Link>
-        )}
-      </div>
+      <Section id="one-day" title="One day in detail" description="All stops and platforms of this train on one day.">
+        <div className="flex flex-wrap gap-3 items-end">
+          <ItalianDateInput
+            label="Day"
+            value={dayToOpen}
+            onChange={setDayToOpen}
+            min={train.startDate}
+            max={train.endDate}
+          />
+          {dayToOpen && (
+            <Link
+              to={pageUrl('/stops', trainStopsSearchToUrl({ trainNumber: train.trainNumber, origin: train.origin, travelDate: dayToOpen }), here)}
+              className="bg-accent text-white rounded-md px-4 py-2 text-sm font-medium"
+            >
+              Open this day
+            </Link>
+          )}
+        </div>
+      </Section>
     </div>
   )
 }

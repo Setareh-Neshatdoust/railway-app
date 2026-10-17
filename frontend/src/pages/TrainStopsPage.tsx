@@ -3,13 +3,15 @@ import type {TrainStop } from '../api/types'
 import { TrainStopsSearchForm, type TrainStopsSearchValues } from '../components/TrainStopsSearchForm'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { useSearchParams } from 'react-router-dom'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useApiRequest } from '../hooks/useApiRequest'
 import { trainStopsSearchfromUrl, trainStopsSearchToUrl } from '../routes/searchParams'
 import { DownloadButton } from '../components/DownloadButton'
 import { downloadCsv, downloadJson, makeFileName } from '../utils/exports' 
 import { STOP_COLUMNS } from '../utils/exportColumns'
 import { formatItalianDate } from '../utils/dates'
+import { BackLink } from '../components/BackLink'
+import { Section } from '../components/Section'
 
 function displayValue(value: string | null): string {
   return value ? value : '—'
@@ -36,19 +38,33 @@ export function TrainStopsPage() {
   const [searchParams,setSearchParams] = useSearchParams()
   const search = useMemo(()=>trainStopsSearchfromUrl(searchParams),[searchParams])
   const {data:result, error, isLoading} = useApiRequest(search, getTrainStops)
+  const [notice, setNotice] = useState<string | null>(null)
   
-  function handleSearch(values: TrainStopsSearchValues) {
-    setSearchParams(trainStopsSearchToUrl(values))
-
+    function handleSearch(values: TrainStopsSearchValues) {
+    // Same train, station and day as the one already shown: nothing to load, so tell the user why nothing changes
+    const isSameSearch = search !== null
+      && values.trainNumber.trim() === search.trainNumber
+      && values.origin === search.origin
+      && values.travelDate === search.travelDate
+    if (isSameSearch) {
+      setNotice(`These are already the stops of train ${search.trainNumber} on ${formatItalianDate(search.travelDate)}. Choose another date or train to see different data.`)
+      return
+    }
+    setNotice(null)
+    const back = searchParams.get('back')
+    setSearchParams(back ? { ...trainStopsSearchToUrl(values), back } : trainStopsSearchToUrl(values))
   }
   
   return (
-    <div className="p-6 max-w-4xl">
-      <h2 className="text-base font-medium mb-1">Train stops</h2>
-      <p className="text-sm text-muted mb-4">
-        Every intermediate stop for one train on one specific day, with platform numbers.
-      </p>
-
+    <div className="space-y-6">
+       <BackLink label="Back to train analysis" />
+       <div>
+        <h2 className="text-xl font-medium">Train stops</h2>
+       <p className="text-sm text-muted mt-1">
+         Every intermediate stop for one train on one specific day, with platform numbers.
+       </p>
+       </div>
+       <Section title="Search">
       <TrainStopsSearchForm 
         key={searchParams.toString()}
         onSubmit={handleSearch}
@@ -57,6 +73,13 @@ export function TrainStopsPage() {
         initialOrigin={search?.origin} 
         initialTravelDate={search?.travelDate}
         />
+      </Section>
+      
+      {notice && (
+        <p role="status" className="border border-accent text-accent rounded-md px-4 py-3 text-sm">
+          {notice}
+        </p>
+      )}
 
       {error && <ErrorMessage message={error} />}
 

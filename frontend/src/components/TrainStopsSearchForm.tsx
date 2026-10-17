@@ -35,8 +35,8 @@ export function TrainStopsSearchForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 mb-6">
-      <label className="flex flex-col gap-1 text-sm">
+    <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <label className="sm:col-span-2 flex items-center gap-2 text-sm">
         Train number
         <input
           type="text"
@@ -64,7 +64,7 @@ export function TrainStopsSearchForm({
       <button
         type="submit"
         disabled={isLoading}
-        className="col-span-2 bg-accent text-white rounded-md py-2 font-medium disabled:opacity-50"
+        className="sm:col-span-2 bg-accent text-white rounded-md py-2 font-medium disabled:opacity-50"
       >
         {isLoading ? 'Loading…' : 'Get stops'}
       </button>

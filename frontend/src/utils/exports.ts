@@ -12,7 +12,7 @@ const SEPARATOR = ";"
 function formatCell (value : string | number| null) : string {
     if (value === null) return ''
     const text = typeof value ==='number' ? String (value) . replace('.', ',') : value
-    if (/[";\r\n]/.test(text)) return `${text.replace(/"/g, '""')}"`
+    if (/[";\r\n]/.test(text)) return `"${text.replace(/"/g, '""')}"` 
     return text
 }
 
@@ -36,7 +36,7 @@ function downloadFile(fileName: string , content: string, mimeType: string): voi
 }
 
 export function downloadCsv<T>(fileName : string , rows: T[], columns : CsvColumn<T>[]) : void{
-    downloadFile (fileName, '\uFEFF' + toCSV(rows, columns), 'text/csv:charset=utf-8')
+    downloadFile (fileName, '\uFEFF' + toCSV(rows, columns), 'text/csv;charset=utf-8')
 }
 
 export function downloadJson (fileName : string, data : unknown) : void {

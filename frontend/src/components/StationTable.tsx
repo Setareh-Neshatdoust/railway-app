@@ -7,6 +7,7 @@ import { ShowMoreButton } from "./ShowMoreButton";
 interface StationTableProps {
     stations: StationStats[]
     linkFor?: (station: string) => string
+    threshold: number
 }
 
 function StationRow({station, link}:{station: StationStats, link?: string}){
@@ -35,8 +36,9 @@ function StationRow({station, link}:{station: StationStats, link?: string}){
     )
 }
 
-export function StationTable({stations, linkFor}: StationTableProps){
+export function StationTable({stations, linkFor, threshold}: StationTableProps){
     const list = useCollapsibleList(stations, 10)
+    
     return(
         <div className="border border-line rounded-md overflow-hidden">
             <table className="w-full text-sm">
@@ -49,9 +51,9 @@ export function StationTable({stations, linkFor}: StationTableProps){
                             >
                             Trains recorded
                         </th>
-                        <th className="px-3 py-2 font-medium text-right">Arrival delay</th>
-                        <th className="px-3 py-2 font-medium text-right">Departure delay</th>
-                        <th className="px-3 py-2 font-medium text-right">On-Time</th>
+                        <th className="px-3 py-2 font-medium text-right">Avg Arrival delay</th>
+                        <th className="px-3 py-2 font-medium text-right">Avg Departure delay</th>
+                        <th className="px-3 py-2 font-medium text-right">On-time rate (≤ {threshold} min)</th>
                     </tr>
                 </thead>
                 <tbody>

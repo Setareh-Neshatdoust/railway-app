@@ -1,11 +1,10 @@
-
 import { getRouteStats } from '../api/client'
 import { RouteSearchForm, type RouteSearchValues } from '../components/RouteSearchForm'
 import { ErrorMessage } from '../components/ErrorMessage'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useMemo } from 'react'
 import { useApiRequest } from '../hooks/useApiRequest'
-import { routeSearchFromUrl, routeSearchToUrl, trainAnalysisToUrl, segmentSearchToUrl } from '../routes/searchParams'
+import { routeSearchFromUrl, routeSearchToUrl, trainAnalysisToUrl, segmentSearchToUrl, pageUrl } from '../routes/searchParams'
 import { formatValue, getPercentageColor } from '../utils/format'
 import { StatsSummary } from '../components/StatsSummary'
 import { StationTable } from '../components/StationTable'
@@ -15,87 +14,146 @@ import { STATION_COLUMNS, TRAIN_COLUMNS } from '../utils/exportColumns'
 import { formatItalianDate } from '../utils/dates'
 import { useCollapsibleList } from '../hooks/useCollapsibleList'
 import { ShowMoreButton } from '../components/ShowMoreButton'
+import { Section } from '../components/Section'
+import { ChartSlot } from '../components/ChartSlot'
+import { PageNav } from '../components/PageNav'
+import { CategoryBadge, CategoryLegend } from '../components/CategoryBadge'
 
 export function RouteStatsPage() {
-  const [searchParams,setSearchParams] = useSearchParams()
-  const search = useMemo(()=>routeSearchFromUrl(searchParams),[searchParams])
-  const {data: result, error, isLoading} = useApiRequest(search,getRouteStats)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  const here = location.pathname + location.search
+  const search = useMemo(() => routeSearchFromUrl(searchParams), [searchParams])
+  const { data: result, error, isLoading } = useApiRequest(search, getRouteStats)
   const trains = useCollapsibleList(result?.by_train ?? [], 5)
-  const baseName = 
-  search ? makeFileName(['route', search.origin, search.destination, formatItalianDate(search.startDate), formatItalianDate(search.endDate)])
-    : ''
+  const period = search ? `${formatItalianDate(search.startDate)} – ${formatItalianDate(search.endDate)}` : ''
+  const baseName =
+    search ? makeFileName(['route', search.origin, search.destination, formatItalianDate(search.startDate), formatItalianDate(search.endDate)])
+      : ''
+
   function handleSearch(values: RouteSearchValues) {
     setSearchParams(routeSearchToUrl(values))
-}
+  }
 
-return (
-  <div className="p-6 max-w-3xl">
-    <h2 className="text-base font-medium mb-4">Route analysis</h2>
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-medium">Route analysis</h2>
+        <p className="text-sm text-muted mt-1">Punctuality of every train between two stations over a period.</p>
+      </div>
 
-     <RouteSearchForm
-        key={searchParams.toString()}
-        initialValues={search}
-        onSubmit={handleSearch}
-        isLoading={isLoading}
-      />
+      <Section title="Search">
+        <RouteSearchForm
+          key={searchParams.toString()}
+          initialValues={search}
+          onSubmit={handleSearch}
+          isLoading={isLoading}
+        />
+      </Section>
 
-   {error && <ErrorMessage message={error} />}
+      {error && <ErrorMessage message={error} />}
 
       {result && search && (
-  <div>
-        <div className="flex gap-2 mb-4">
-      <DownloadButton
-        label="Trains (CSV)"
-        onClick={() => downloadCsv(`${baseName}_trains.csv`, result.by_train, TRAIN_COLUMNS)}
-      />
-      {search.includeStations && (
-        <DownloadButton
-          label="Stations (CSV)"
-          onClick={() => downloadCsv(`${baseName}_stations.csv`, result.by_station, STATION_COLUMNS)}
-        />
-      )}
-      <DownloadButton
-        label="All (JSON)"
-        onClick={() => downloadJson(`${baseName}.json`, {
-          source: 'TrainStats (trainstats.altervista.org)',
-          generated_at: new Date().toISOString(),
-          ...result,
-        })}
-      />
-    </div>
-     <StatsSummary summary={result.overall}/>
-    <h3 className="text-sm text-muted mb-2">By train ({result.trains_analyzed} analyzed)</h3>
-       <div className="border border-line rounded-md divide-y divide-line">
-      {trains.visibleItems.map((train) => (
-        <div key={train.train_number} className="flex items-center px-4 py-2 text-sm">
-          <Link
-            to={`/train?${new URLSearchParams(trainAnalysisToUrl({...search, trainNumber: train.train_number}))}`}
-            className="flex-1 text-accent hover:underline"
-           >
-            {train.train_number} ({train.category})
-           </Link>
-          <span className="font-mono text-muted mr-4">{train.total_records} records</span>
-          <span className={`font-mono ${getPercentageColor(train.on_time_percentage)}`}>
-            {formatValue(train.on_time_percentage, '%')}
-          </span>
-        </div>
-      ))}
-      {trains.canToggle && (
-        <ShowMoreButton expanded={trains.expanded} hiddenCount={trains.hiddenCount} onToggle={trains.toggle} />
-      )}
-    </div>
-    {search.includeStations && (
-      <>
-      <h3 className="text-sm text-muted mt-6 mb-2">By station (all trains). Click a station to open {search.origin} → that station.</h3>
+        <>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-medium">{search.origin} → {search.destination}</h3>
+              <p className="text-sm text-muted">{period}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <DownloadButton
+                label="Trains (CSV)"
+                onClick={() => downloadCsv(`${baseName}_trains.csv`, result.by_train, TRAIN_COLUMNS)}
+              />
+              {search.includeStations && (
+                <DownloadButton
+                  label="Stations (CSV)"
+                  onClick={() => downloadCsv(`${baseName}_stations.csv`, result.by_station, STATION_COLUMNS)}
+                />
+              )}
+              <DownloadButton
+                label="All (JSON)"
+                onClick={() => downloadJson(`${baseName}.json`, {
+                  source: 'TrainStats (trainstats.altervista.org)',
+                  generated_at: new Date().toISOString(),
+                  ...result,
+                })}
+              />
+            </div>
+          </div>
 
-        <StationTable
-        stations={result.by_station}
-        linkFor={(station) => `/segment?${new URLSearchParams(segmentSearchToUrl({...search, destination: station}))}`}
-        />
+          <PageNav items={[
+            { id: 'summary', label: 'Summary' },
+            { id: 'over-time', label: 'Over time' },
+            { id: 'by-train', label: 'By train' },
+            ...(search.includeStations ? [{ id: 'by-station', label: 'By station' }] : []),
+          ]} />
+
+          <StatsSummary summary={result.overall} period={period} />
+
+          <Section id="over-time" title="Over time">
+            <ChartSlot
+              title="Average arrival delay by day"
+              shows="One point per day in the period, so trends and bad days stand out."
+            />
+          </Section>
+
+          <Section
+            id="by-train"
+            title={`By train (${result.by_train.length})`}
+            description="Trains with recorded data in this period. Click a train to see its stops."
+          >
+            <ChartSlot
+              title="On-time rate by train"
+              shows="One bar per train, sorted from best to worst, on a common scale from 0 to 100%."
+            />
+            <div className="mb-3"><CategoryLegend /></div>
+            <div className="border border-line rounded-md divide-y divide-line">
+              {trains.visibleItems.map((train) => (
+                <div key={train.train_number} className="flex items-center gap-3 px-4 py-2 text-sm">
+                  <CategoryBadge category={train.category} />
+                  <Link
+                    to={pageUrl('/train', trainAnalysisToUrl({ ...search, trainNumber: train.train_number }), here)}
+                    className="flex-1 text-accent hover:underline"
+                  >
+                    {train.train_number}
+                  </Link>
+                  <span className="font-mono text-muted mr-4" title="Days on which this train has recorded data">
+                    {train.total_records} days
+                  </span>
+                  <span
+                    className={`font-mono ${getPercentageColor(train.on_time_percentage)}`}
+                    title={`On-time rate: arrived at most ${train.on_time_threshold_minutes} min late`}
+                  >
+                    {formatValue(train.on_time_percentage, '%')}
+                  </span>
+                </div>
+              ))}
+              {trains.canToggle && (
+                <ShowMoreButton expanded={trains.expanded} hiddenCount={trains.hiddenCount} onToggle={trains.toggle} />
+              )}
+            </div>
+          </Section>
+
+          {search.includeStations && (
+            <Section
+              id="by-station"
+              title="By station (all trains)"
+              description={`Averages over ${period}. Click a station to open ${search.origin} → that station.`}
+            >
+              <ChartSlot
+                title="Average delay along the route"
+                shows="Stations in travel order on the horizontal axis, average delay on the vertical axis, to see where delay builds up."
+              />
+              <StationTable
+                stations={result.by_station}
+                threshold={result.overall.on_time_threshold_minutes}
+                linkFor={(station) => pageUrl('/segment', segmentSearchToUrl({ ...search, destination: station }), here)}
+              />
+            </Section>
+          )}
         </>
-    )}
-  </div>
-)}
-  </div>
-)
+      )}
+    </div>
+  )
 }

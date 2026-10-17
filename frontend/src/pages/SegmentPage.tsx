@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { getSegmentStats } from '../api/client'
+import { BackLink } from '../components/BackLink'
 import { DownloadButton } from '../components/DownloadButton'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { SegmentResult } from '../components/SegmentResult'
@@ -13,32 +14,29 @@ import { downloadCsv, downloadJson, makeFileName } from '../utils/exports'
 // From the origin to one intermediate stop, opened by clicking a station on Route analysis
 export function SegmentPage() {
   const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
   const search = useMemo(() => segmentSearchFromUrl(searchParams), [searchParams])
   const { data, error, isLoading } = useApiRequest(search, getSegmentStats)
 
   if (!search) {
-    return <div className="p-6"><ErrorMessage message="Missing origin, destination or dates in the address." /></div>
+    return <ErrorMessage message="Missing origin, destination or dates in the address." />
   }
 
+  const period = `${formatItalianDate(search.startDate)} – ${formatItalianDate(search.endDate)}`
   const baseName = makeFileName(['segment', search.origin, search.destination, formatItalianDate(search.startDate), formatItalianDate(search.endDate)])
 
   return (
-    <div className="p-6 max-w-3xl">
-      <button type="button" onClick={() => navigate(-1)} className="text-sm text-accent hover:underline mb-4">
-        ← Back to route analysis
-      </button>
-      <h2 className="text-base font-medium">{search.origin} → {search.destination}</h2>
-      <p className="text-xs text-muted mb-4">
-        {formatItalianDate(search.startDate)} – {formatItalianDate(search.endDate)} · every train that stopped at {search.origin} and then at {search.destination}
-      </p>
+    <div className="space-y-6">
+      <BackLink label="Back to route analysis" />
 
-      {isLoading && <p className="text-sm text-muted">Loading…</p>}
-      {error && <ErrorMessage message={error} />}
-
-      {data && (
-        <>
-          <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl font-medium">{search.origin} → {search.destination}</h2>
+          <p className="text-sm text-muted mt-1">
+            {period} · every train that stopped at {search.origin} and then at {search.destination}
+          </p>
+        </div>
+        {data && (
+          <div className="flex flex-wrap gap-2">
             <DownloadButton
               label="Trains (CSV)"
               onClick={() => downloadCsv(`${baseName}_trains.csv`, data.by_train, SEGMENT_TRAIN_COLUMNS)}
@@ -52,9 +50,13 @@ export function SegmentPage() {
               })}
             />
           </div>
-          <SegmentResult data={data} />
-        </>
-      )}
+        )}
+      </div>
+
+      {isLoading && <p className="text-sm text-muted">Loading…</p>}
+      {error && <ErrorMessage message={error} />}
+
+      {data && <SegmentResult data={data} period={period} />}
     </div>
   )
 }
