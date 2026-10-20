@@ -18,3 +18,6 @@ dist/
 
 # Docker
 *.log
+
+# Results of scripts/check_relations.py (data, not code)
+backend/relation_check/
