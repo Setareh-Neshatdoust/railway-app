@@ -19,8 +19,8 @@ Then open http://localhost:8000/docs for the interactive API documentation.
 
 ### Frontend
 ```bash
-docker pull setarehneshatdoust/railway-frontend:v1.1
-docker run -p 3000:80 setarehneshatdoust/railway-frontend:v1.1
+docker pull setarehneshatdoust/railway-frontend:v1.2
+docker run -p 3000:80 setarehneshatdoust/railway-frontend:v1.2
 ```
 Then open http://localhost:3000. The backend must also be running (see above) on port 8000, since the frontend calls it directly from the browser.
 
@@ -50,3 +50,5 @@ Then open the URL Vite prints (usually http://localhost:5173).
 - `GET /train/details` — daily historical records for a specific train
 - `GET /route/stats` — date-range statistics for a route (average delay, cancellation rate, on-time percentage), aggregated across all trains on the route. Optional `train_number` to restrict to one train; optional `include_stations=true` to also aggregate per intermediate station along the route
 - `GET /stations` — the full list of station names known to TrainStats, used to power the frontend's search autocomplete
+- `GET /route/segment` — date-range statistics from the origin to any stop of the route (TrainStats "Cerca per fermate"): every train that stopped at both stations
+- `GET /stations/destinations` — the destinations TrainStats has recorded for an origin, used to limit the Destination field
