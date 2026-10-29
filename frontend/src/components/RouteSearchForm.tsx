@@ -3,6 +3,7 @@ import { useStations } from '../hooks/useStations'
 import { StationAutocomplete } from './StationAutocomplete'
 import { useDestinations } from '../hooks/useDestinations'
 import { ItalianDateInput } from './ItalianDateInput'
+import { DirectTrainNotice } from './DirectTrainNotice'
 
 export interface RouteSearchValues {
   origin: string
@@ -30,6 +31,9 @@ export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSea
   //Destination will be only loaded once the origin is selected
   const validOrigin = stations.includes(origin) ? origin : ''
   const{destinations, error:destinationsError,isLoading: destinationsLoading} = useDestinations(validOrigin)
+  
+  // The direct-train check runs only for a destination picked from the list
+  const validDestination = destinations.includes(destination) ? destination : ''
 
   //Clearing previous destination when the origin is changed
   function handleOriginChange (value : string){
@@ -64,6 +68,9 @@ export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSea
         disabled={!validOrigin || destinationsLoading || destinations.length === 0}
         hint={destinationHint}
       />
+      <div className="sm:col-span-2 empty:hidden">
+        <DirectTrainNotice origin={validOrigin} destination={validDestination} />
+      </div>
 
       <ItalianDateInput
         label="Start date"

@@ -39,6 +39,14 @@ function StationRow({station, link}:{station: StationStats, link?: string}){
 export function StationTable({stations, linkFor, threshold}: StationTableProps){
     const list = useCollapsibleList(stations, 10)
     
+    if (stations.length === 0) {
+        return (
+            <p className="border border-line rounded-md px-4 py-3 text-sm text-muted">
+                No stop data was recorded for these trains in this period.
+            </p>
+        )
+    }
+    
     return(
         <div className="border border-line rounded-md overflow-hidden">
             <table className="w-full text-sm">

@@ -1,21 +1,23 @@
 import { useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { getSegmentStats } from '../api/client'
 import { BackLink } from '../components/BackLink'
 import { DownloadButton } from '../components/DownloadButton'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { SegmentResult } from '../components/SegmentResult'
 import { useApiRequest } from '../hooks/useApiRequest'
-import { segmentSearchFromUrl } from '../routes/searchParams'
+import { segmentSearchFromUrl, backFromUrl } from '../routes/searchParams'
 import { formatItalianDate } from '../utils/dates'
 import { SEGMENT_TRAIN_COLUMNS } from '../utils/exportColumns'
 import { downloadCsv, downloadJson, makeFileName } from '../utils/exports'
+import { AlertModal } from '../components/AlertModal'
 
 // From the origin to one intermediate stop, opened by clicking a station on Route analysis
 export function SegmentPage() {
   const [searchParams] = useSearchParams()
   const search = useMemo(() => segmentSearchFromUrl(searchParams), [searchParams])
   const { data, error, isLoading } = useApiRequest(search, getSegmentStats)
+  const navigate = useNavigate()
 
   if (!search) {
     return <ErrorMessage message="Missing origin, destination or dates in the address." />
@@ -54,8 +56,7 @@ export function SegmentPage() {
       </div>
 
       {isLoading && <p className="text-sm text-muted">Loading…</p>}
-      {error && <ErrorMessage message={error} />}
-
+      {error && <AlertModal message={error} onClose={() => navigate(backFromUrl(searchParams))} />}
       {data && <SegmentResult data={data} period={period} />}
     </div>
   )

@@ -1,5 +1,5 @@
 
-import type { RouteStatsResponse , TrainStopsResponse, SegmentStatsResponse} from './types'
+import type { RouteStatsResponse , TrainStopsResponse, SegmentStatsResponse, DirectTrainResponse} from './types'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -74,6 +74,17 @@ export async function getSegmentStats(params: SegmentStatsParams): Promise<Segme
     end_date: params.endDate,
   })
   return fetchJasonCahched<SegmentStatsResponse>(`${BASE_URL}/route/segment?${query.toString()}`)
+}
+
+export interface DirectTrainParams {
+  origin: string
+  destination: string
+}
+
+// Whether a direct train runs between the two stations today (cached one day by the backend)
+export async function getDirectTrain(params: DirectTrainParams): Promise<DirectTrainResponse> {
+  const query = new URLSearchParams({ origin: params.origin, destination: params.destination })
+  return fetchJasonCahched<DirectTrainResponse>(`${BASE_URL}/route/direct-train?${query.toString()}`)
 }
 
 export async function getStations(): Promise<string[]> {

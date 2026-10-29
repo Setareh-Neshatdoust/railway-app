@@ -1,9 +1,9 @@
 import { getTrainStops} from '../api/client'
 import type {TrainStop } from '../api/types'
 import { TrainStopsSearchForm, type TrainStopsSearchValues } from '../components/TrainStopsSearchForm'
-import { ErrorMessage } from '../components/ErrorMessage'
+import { AlertModal } from '../components/AlertModal'
 import { useSearchParams } from 'react-router-dom'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { useApiRequest } from '../hooks/useApiRequest'
 import { trainStopsSearchfromUrl, trainStopsSearchToUrl } from '../routes/searchParams'
 import { DownloadButton } from '../components/DownloadButton'
@@ -39,6 +39,10 @@ export function TrainStopsPage() {
   const search = useMemo(()=>trainStopsSearchfromUrl(searchParams),[searchParams])
   const {data:result, error, isLoading} = useApiRequest(search, getTrainStops)
   const [notice, setNotice] = useState<string | null>(null)
+  // The search whose error the user has closed: its message is not shown again
+  const [closedErrorFor, setClosedErrorFor] = useState<string | null>(null)
+  const searchKey = searchParams.toString()
+  const closeError = useCallback(() => setClosedErrorFor(searchKey), [searchKey])
   
     function handleSearch(values: TrainStopsSearchValues) {
     // Same train, station and day as the one already shown: nothing to load, so tell the user why nothing changes
@@ -46,6 +50,10 @@ export function TrainStopsPage() {
       && values.trainNumber.trim() === search.trainNumber
       && values.origin === search.origin
       && values.travelDate === search.travelDate
+    if (isSameSearch && error) {
+      setClosedErrorFor(null) // show the same error message again
+      return
+    }
     if (isSameSearch) {
       setNotice(`These are already the stops of train ${search.trainNumber} on ${formatItalianDate(search.travelDate)}. Choose another date or train to see different data.`)
       return
@@ -80,10 +88,10 @@ export function TrainStopsPage() {
           {notice}
         </p>
       )}
-
-      {error && <ErrorMessage message={error} />}
-
-            {result && search && (
+      {error && closedErrorFor !== searchKey && (
+        <AlertModal message={error} onClose={closeError} />
+      )}
+      {result && search && (
         <div className="flex gap-2 mb-4">
           <DownloadButton
             label="Stops (CSV)"

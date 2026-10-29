@@ -70,3 +70,13 @@ export interface SegmentStatsResponse {
   overall: RouteStatsSummary
   by_train: SegmentTrainStats[]
 }
+
+// Does a direct train run between two stations? (GET /route/direct-train)
+export type DirectTrainStatus = 'active' | 'special_only' | 'no_direct_train' | 'no_trains'
+
+export interface DirectTrainResponse {
+  origin: string
+  destination: string
+  status: DirectTrainStatus
+  last_seen: string | null // ISO date "YYYY-MM-DD", or null when unknown
+}

@@ -1,8 +1,8 @@
 import { getRouteStats } from '../api/client'
 import { RouteSearchForm, type RouteSearchValues } from '../components/RouteSearchForm'
-import { ErrorMessage } from '../components/ErrorMessage'
+import { AlertModal } from '../components/AlertModal'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
-import { useMemo } from 'react'
+import { useMemo, useCallback, useState } from 'react'
 import { useApiRequest } from '../hooks/useApiRequest'
 import { routeSearchFromUrl, routeSearchToUrl, trainAnalysisToUrl, segmentSearchToUrl, pageUrl } from '../routes/searchParams'
 import { formatValue, getPercentageColor } from '../utils/format'
@@ -18,6 +18,7 @@ import { Section } from '../components/Section'
 import { ChartSlot } from '../components/ChartSlot'
 import { PageNav } from '../components/PageNav'
 import { CategoryBadge, CategoryLegend } from '../components/CategoryBadge'
+import { DirectTrainNotice } from '../components/DirectTrainNotice'
 
 export function RouteStatsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -31,8 +32,15 @@ export function RouteStatsPage() {
     search ? makeFileName(['route', search.origin, search.destination, formatItalianDate(search.startDate), formatItalianDate(search.endDate)])
       : ''
 
-  function handleSearch(values: RouteSearchValues) {
-    setSearchParams(routeSearchToUrl(values))
+  // The search whose error the user has closed: its message is not shown again
+  const [closedErrorFor, setClosedErrorFor] = useState<string | null>(null)
+  const searchKey = searchParams.toString()
+  const closeError = useCallback(() => setClosedErrorFor(searchKey), [searchKey])
+
+    function handleSearch(values: RouteSearchValues) {
+    const params = routeSearchToUrl(values)
+    if (new URLSearchParams(params).toString() === searchKey) setClosedErrorFor(null)
+    setSearchParams(params)
   }
 
   return (
@@ -51,7 +59,9 @@ export function RouteStatsPage() {
         />
       </Section>
 
-      {error && <ErrorMessage message={error} />}
+      {error && closedErrorFor !== searchKey && (
+        <AlertModal message={error} onClose={closeError} />
+      )}
 
       {result && search && (
         <>
@@ -81,6 +91,8 @@ export function RouteStatsPage() {
               />
             </div>
           </div>
+
+          <DirectTrainNotice origin={search.origin} destination={search.destination} />
 
           <PageNav items={[
             { id: 'summary', label: 'Summary' },

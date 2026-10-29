@@ -1,11 +1,11 @@
 import { useMemo, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom";
 import { getRouteStats } from "../api/client";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { StatsSummary } from "../components/StatsSummary";
 import { StationTable } from "../components/StationTable";
 import { useApiRequest } from "../hooks/useApiRequest";
-import { pageUrl, trainAnalysisFromUrl, trainStopsSearchToUrl } from "../routes/searchParams";
+import { pageUrl, trainAnalysisFromUrl, trainStopsSearchToUrl, backFromUrl } from "../routes/searchParams";
 import { DownloadButton } from "../components/DownloadButton";
 import { downloadCsv,downloadJson, makeFileName } from "../utils/exports";
 import { STATION_COLUMNS } from "../utils/exportColumns";
@@ -15,6 +15,7 @@ import { BackLink } from "../components/BackLink";
 import { Section } from "../components/Section";
 import { ChartSlot } from "../components/ChartSlot";
 import { PageNav } from "../components/PageNav";
+import { AlertModal } from "../components/AlertModal";
 
 export function TrainAnalysisPage (){
     const [searchParams] = useSearchParams()
@@ -24,6 +25,7 @@ export function TrainAnalysisPage (){
     const params = useMemo(()=> (train?{... train, includeStations:true}: null), [train],)
     const {data : result , error, isLoading} = useApiRequest(params, getRouteStats)
     const [dayToOpen, setDayToOpen] = useState(train?.startDate ?? '')
+    const navigate = useNavigate()
 
     if(!train){
         return (
@@ -62,7 +64,7 @@ export function TrainAnalysisPage (){
       </div>
 
       {isLoading && <p className="text-sm text-muted">Loading… </p>}
-      {error && <ErrorMessage message={error} />}
+      {error && <AlertModal message={error} onClose={() => navigate(backFromUrl(searchParams))} />}
 
       {result && (
         <>
