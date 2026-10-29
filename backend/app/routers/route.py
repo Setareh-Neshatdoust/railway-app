@@ -7,6 +7,7 @@ from app.utils.dates import parse_iso_date, validate_range
 from app.utils.html_parsing import parse_relation_html, parse_train_details_html, parse_train_stops_html, parse_stops_between_json
 from app.utils.stats import aggregate_route_stats, aggregate_station_stats, trim_stops_to_segment
 from app.services.station_names import stop_station_name
+from app.services.direct_train import direct_train_status
 
 router = APIRouter(prefix="/route", tags=["route"])
 
@@ -68,6 +69,13 @@ def get_route_stats(
         all_records.extend(records)
 
     overall = aggregate_route_stats(all_records, on_time_threshold_minutes)
+        
+    if overall["total_records"] == 0:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No train between '{origin}' and '{destination}' was recorded "
+                   f"from {s.strftime('%d/%m/%Y')} to {e.strftime('%d/%m/%Y')}.",
+        )
 
     all_stops = []
     canonical_origin = trains[0]["origin"]
@@ -163,4 +171,24 @@ def get_segment_stats(
         "end_date": end_date,
         "overall": aggregate_route_stats(all_records, on_time_threshold_minutes),
         "by_train": by_train,
+    }
+
+@router.get("/direct-train")
+def get_direct_train(origin: str, destination: str):
+    """
+    Does a direct train run between origin and destination today?
+    The approved rule (thesis, Section 3.4.5), answered from memory for one day.
+    """
+    try:
+        result = direct_train_status(origin, destination)
+    except Exception:
+        raise HTTPException(
+            status_code=502,
+            detail="TrainStats did not answer the direct-train check. Please try again later.",
+        )
+    return {
+        "origin": origin,
+        "destination": destination,
+        "status": result["status"],
+        "last_seen": result["last_seen"].isoformat() if result["last_seen"] else None,
     }
