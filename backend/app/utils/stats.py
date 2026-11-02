@@ -1,4 +1,5 @@
 import re
+from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
 CANCELLATION_KEYWORDS = ("soppress", "cancellat")
@@ -128,3 +129,36 @@ def trim_stops_to_segment(
         return []
 
     return stops[origin_idx:destination_idx + 1]
+
+def _record_date(record: Dict[str, Any]) -> Optional[date]:
+    try:
+        return datetime.strptime(record.get("date") or "", "%d/%m/%Y").date()
+    except ValueError:
+        return None
+
+def aggregate_by_day(
+    records: List[Dict[str, Any]],
+    on_time_threshold_minutes: int,
+) -> List[Dict[str, Any]]:
+    """
+    One entry per day with records, in date order: the same indicators as the summary,
+    computed on that day's records only, plus the notes TrainStats wrote that day
+    (measures taken and changes, e.g. "Soppresso", "Treno cancellato da BRA").
+    """
+    by_date: Dict[date, List[Dict[str, Any]]] = {}
+    for record in records:
+        day = _record_date(record)
+        if day:
+            by_date.setdefault(day, []).append(record)
+
+    days = []
+    for day in sorted(by_date):
+        day_records = by_date[day]
+        notes = sorted({text.strip() for r in day_records
+                        for text in (r.get("status"), r.get("variations")) if text and text.strip()})
+        days.append({
+            "date": day.isoformat(),
+            **aggregate_route_stats(day_records, on_time_threshold_minutes),
+            "notes": notes,
+        })
+    return days

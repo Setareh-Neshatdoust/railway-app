@@ -1,5 +1,4 @@
 from typing import Optional
-
 from fastapi import APIRouter, HTTPException
 from datetime import timedelta
 from app.services.trainstats_client import fetch_relation_html, fetch_train_details_html, fetch_train_stops_html, fetch_stops_between_text
@@ -8,6 +7,7 @@ from app.utils.html_parsing import parse_relation_html, parse_train_details_html
 from app.utils.stats import aggregate_route_stats, aggregate_station_stats, trim_stops_to_segment
 from app.services.station_names import stop_station_name
 from app.services.direct_train import direct_train_status
+from app.utils.stats import aggregate_by_day, aggregate_route_stats, aggregate_station_stats, trim_stops_to_segment
 
 router = APIRouter(prefix="/route", tags=["route"])
 
@@ -110,6 +110,7 @@ def get_route_stats(
         "overall": overall,
         "by_train": by_train,
         "by_station": by_station,
+        "by_day": aggregate_by_day(all_records, on_time_threshold_minutes),
     }
 
 @router.get("/segment")
@@ -176,7 +177,7 @@ def get_segment_stats(
 @router.get("/direct-train")
 def get_direct_train(origin: str, destination: str):
     """
-    Does a direct train run between origin and destination today?
+    Is the relation still served, and do trains pass through both stations?
     The approved rule (thesis, Section 3.4.5), answered from memory for one day.
     """
     try:
@@ -189,6 +190,8 @@ def get_direct_train(origin: str, destination: str):
     return {
         "origin": origin,
         "destination": destination,
-        "status": result["status"],
+        "relation": result["relation"],
         "last_seen": result["last_seen"].isoformat() if result["last_seen"] else None,
+        "count": result["count"],
+        "through_last_seen": result["through_last_seen"].isoformat() if result["through_last_seen"] else None,
     }

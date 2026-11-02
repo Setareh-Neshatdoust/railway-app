@@ -43,33 +43,44 @@ def latest(dates: List[Optional[date]]) -> Optional[date]:
     known = [d for d in dates if d is not None]
     return max(known) if known else None
 
-def classify_history(
+def classify_relation(
     trains: List[Dict[str, Any]],
     today: date,
     window_days: int = 7,
-    min_count: int = 2,
+    min_count: int = 5,
 ) -> Dict[str, Any]:
     """
-    Reads the trains of a relation (cercarelazione.php) and decides:
-      no_trains     -> TrainStats returns no train at all
+    Describes the relation itself: trains that START at the origin and END at the
+    destination (TrainStats "Cerca relazione"). Trains that only pass through are
+    checked separately (direct_train.recent_through_train).
+      empty         -> the relation page has no train
       special_only  -> only special trains (EXP, NCL, no category)
       active        -> a regular train recorded at least min_count times, seen in the last window_days
-      check_recent  -> not sure: ask "Cerca per fermate" (step 2)
+      occasional    -> regular trains seen recently, but recorded fewer than min_count times
+      inactive      -> no regular train seen in the last window_days
     """
     if not trains:
-        # The relation page can be empty although trains run (e.g. ASTI -> CASTAGNOLE DELLE LANZE):
-        # let "Cerca per fermate" decide
-        return {"status": "check_recent", "last_seen": None}
+        return {"relation": "empty", "last_seen": None, "count": 0}
 
     regular = [t for t in trains if not is_special(t)]
     if not regular:
-        specials = group_by_train(trains)
-        return {"status": "special_only", "last_seen": latest([g["last_seen"] for g in specials.values()])}
+        specials = group_by_train(trains).values()
+        return {"relation": "special_only",
+                "last_seen": latest([g["last_seen"] for g in specials]),
+                "count": sum(g["count"] for g in specials)}
 
-    grouped = group_by_train(regular)
-    for entry in grouped.values():
-        seen = entry["last_seen"]
-        if entry["count"] >= min_count and seen and (today - seen).days <= window_days:
-            return {"status": "active", "last_seen": seen}
+    grouped = group_by_train(regular).values()
+    recent = [g for g in grouped if g["last_seen"] and (today - g["last_seen"]).days <= window_days]
 
-    return {"status": "check_recent", "last_seen": latest([g["last_seen"] for g in grouped.values()])}
+    for entry in recent:
+        if entry["count"] >= min_count:
+            return {"relation": "active", "last_seen": entry["last_seen"], "count": entry["count"]}
+
+    if recent:
+        return {"relation": "occasional",
+                "last_seen": latest([g["last_seen"] for g in recent]),
+                "count": sum(g["count"] for g in recent)}
+
+    return {"relation": "inactive",
+            "last_seen": latest([g["last_seen"] for g in grouped]),
+            "count": sum(g["count"] for g in grouped)}

@@ -4,17 +4,19 @@ from typing import Any, Dict, Optional, Tuple
 
 from app.services.station_names import stop_station_name
 from app.services.trainstats_client import fetch_relation_html, fetch_stops_between_text
-from app.utils.html_parsing import parse_relation_html, parse_stops_between_json
-from app.utils.relation_status import classify_history
+from app.utils.html_parsing import parse_relation_html, parse_stops_between_json, same_name
+from app.utils.relation_status import SPECIAL_CATEGORIES, classify_relation
 
 CACHE_SECONDS = 24 * 60 * 60  # one day
 _cache: Dict[Tuple[str, str], Tuple[float, Dict[str, Any]]] = {}
 
-def recent_direct_train(origin: str, destination: str, today: date, days: int = 7) -> Optional[date]:
+
+def recent_through_train(origin: str, destination: str, today: date, days: int = 7) -> Optional[date]:
     """
     Asks "Cerca per fermate" for yesterday, then the day before, and so on.
-    Returns the first day on which a train stopped at origin and then at
-    destination, or None if there was none in the last `days` days.
+    Returns the first day on which a regular train stopped at origin and then at
+    destination WITHOUT starting and ending there (those are the relation's own
+    trains), or None if there was none in the last `days` days.
     """
     for back in range(1, days + 1):
         day = today - timedelta(days=back)
@@ -24,15 +26,22 @@ def recent_direct_train(origin: str, destination: str, today: date, days: int = 
         text = fetch_stops_between_text(stop_origin, stop_destination, date_str)
         if not text.strip().startswith("["):
             raise ValueError("Cerca per fermate answered with an error page")
-        if parse_stops_between_json(text, stop_origin, stop_destination):
-            return day
+        for record in parse_stops_between_json(text, stop_origin, stop_destination):
+            own_train = (same_name(record["train_origin"], stop_origin)
+                         and same_name(record["train_destination"], stop_destination))
+            special = (record["category"] or "").strip().upper() in SPECIAL_CATEGORIES
+            if not own_train and not special:
+                return day
     return None
+
 
 def direct_train_status(origin: str, destination: str, today: Optional[date] = None) -> Dict[str, Any]:
     """
-      1. history of the relation -> special_only / active / no_trains / check_recent
-      2. check_recent -> Cerca per fermate in the last 7 days -> active or no_direct_train
-    The answer is kept for one day, so TrainStats is asked at most once a day per relation.
+    Two separate facts, as in TrainStats:
+      - the relation (trains that start at origin and end at destination)
+      - the last day a train passed through both stations, checked only when the
+        relation is not active
+    The answer is kept for one day, so TrainStats is asked at most once a day per pair.
     """
     today = today or date.today()
     key = (origin.strip().upper(), destination.strip().upper())
@@ -42,20 +51,15 @@ def direct_train_status(origin: str, destination: str, today: Optional[date] = N
         return cached[1]
 
     trains = parse_relation_html(fetch_relation_html(origin, destination))
-    result = classify_history(trains, today)
+    result = classify_relation(trains, today)
+    result["through_last_seen"] = None
 
-
-    if result["status"] == "check_recent":
+    if result["relation"] != "active":
         # The destination list can spell a station differently from TrainStats' own pages
         # (MACCARESE -> MACCARESE-FREGENE): use the names of the relation page when there are some
         origin_name = (trains[0].get("origin") or origin) if trains else origin
         destination_name = (trains[0].get("destination") or destination) if trains else destination
-        day = recent_direct_train(origin_name, destination_name, today)
-        
-        if day:
-            result = {"status": "active", "last_seen": day}
-        else:
-            result = {"status": "no_direct_train", "last_seen": result["last_seen"]}
+        result["through_last_seen"] = recent_through_train(origin_name, destination_name, today)
 
     _cache[key] = (time.time(), result)
     return result
