@@ -25,3 +25,8 @@ export function getDelayColor(minutes : number | null):string{
     if(minutes <=5) return 'text-signal-warn'
     return 'text-signal-bad'
 }
+// how many times a train ran in the period, and how many of those were cancelled
+export function formatRuns(total: number, cancelled: number): string {
+  const runs = `${total} ${total === 1 ? 'run' : 'runs'}`
+  return cancelled > 0 ? `${runs} · ${cancelled} cancelled` : runs
+}

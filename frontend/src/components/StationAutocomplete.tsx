@@ -1,5 +1,10 @@
 import { useState ,useRef, useEffect} from 'react'
 
+// lower case, accents removed, only letters and digits kept
+function simplify(text: string): string {
+  return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '')
+}
+
 interface StationAutocompleteProps {
   label: string
   value: string
@@ -22,9 +27,9 @@ export function StationAutocomplete({
   const [isOpen, setIsOpen] = useState(false)
   const inputRef = useRef <HTMLInputElement>(null)
 
-  const matches = value
-  ? options.filter((option) => option.toLowerCase().includes(value.toLowerCase())).slice(0, 10)
-  : options.slice(0, 10)
+  // Every matching station, in a list that scrolls. Dots, spaces, apostrophes and accents are ignored
+  const wanted = simplify(value)
+  const matches = wanted ? options.filter((option) => simplify(option).includes(wanted)) : options
 
   //Force the user to choose only defined destination for a specific origin instead of all suggested stations
   useEffect(()=>{

@@ -33,6 +33,13 @@ export interface RouteStatsResponse {
   overall: RouteStatsSummary
   by_train: TrainStats[]
   by_station: StationStats[]
+  by_day: DayStats[]
+}
+
+// One day of the period: the same indicators as the summary, for that day only
+export interface DayStats extends RouteStatsSummary {
+  date: string      
+  notes: string[]   // what TrainStats wrote that day, e.g. "Soppresso", "Treno cancellato da BRA"
 }
 
 export interface TrainStop {
@@ -71,12 +78,14 @@ export interface SegmentStatsResponse {
   by_train: SegmentTrainStats[]
 }
 
-// Does a direct train run between two stations? (GET /route/direct-train)
-export type DirectTrainStatus = 'active' | 'special_only' | 'no_direct_train' | 'no_trains'
+/// Is the route still served, and do trains pass through both stations? (GET /route/direct-train)
+export type RelationStatus = 'active' | 'occasional' | 'special_only' | 'inactive' | 'empty'
 
 export interface DirectTrainResponse {
   origin: string
   destination: string
-  status: DirectTrainStatus
-  last_seen: string | null // ISO date "YYYY-MM-DD", or null when unknown
+  relation: RelationStatus
+  last_seen: string | null         // last train of the route, ISO date "YYYY-MM-DD"
+  count: number                    // how many times those trains were recorded
+  through_last_seen: string | null // last train passing through both stations (only when the route is not active)
 }

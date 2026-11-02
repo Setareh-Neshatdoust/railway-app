@@ -21,6 +21,7 @@ export function routeSearchToUrl (values : RouteSearchValues){
         end_date : values.endDate
     }
     if(values.includeStations) params.stations = '1'
+    if(values.mode === 'stops') params.mode = 'stops'
     return params
 }
 
@@ -34,7 +35,8 @@ export function routeSearchFromUrl (searchParams : URLSearchParams) : RouteSearc
     if(!origin || !destination || !startDate || !endDate) 
         return null
     const includeStations= searchParams.get('stations') === '1'
-    return {origin, destination, startDate, endDate, includeStations}
+    const mode = searchParams.get('mode') === 'stops' ? 'stops' : 'relation'
+    return {origin, destination, startDate, endDate, includeStations, mode}
 }
 
 export function trainStopsSearchToUrl (values : TrainStopsSearchValues){

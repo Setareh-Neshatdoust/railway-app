@@ -21,12 +21,12 @@ function StatCard ({label, value, colorClass, detail, info} : StatCardProps){
 }
 
 //Three headline numbers, averages over every train run in the chosen period
-
-export function StatsSummary ({summary, period}:{summary : RouteStatsSummary, period : string}){
+export function StatsSummary ({summary, period, runsOf}:{summary : RouteStatsSummary, period : string, runsOf? : string}){
+    const runs = runsOf ? `${summary.total_records} runs of ${runsOf}` : `${summary.total_records} train runs`
     return (
-        <div>
+        <div id="summary" className="scroll-mt-32">
             <p className="text-xs text-muted mb-2">
-                Averages over {period} · {summary.total_records} train runs
+                Averages over {period} · {runs} train runs
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <StatCard

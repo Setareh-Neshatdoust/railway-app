@@ -1,5 +1,4 @@
-import { useMemo, useState } from "react";
-import { Link, useLocation, useSearchParams, useNavigate } from "react-router-dom";
+import { useMemo } from "react";
 import { getRouteStats } from "../api/client";
 import { ErrorMessage } from "../components/ErrorMessage";
 import { StatsSummary } from "../components/StatsSummary";
@@ -9,13 +8,14 @@ import { pageUrl, trainAnalysisFromUrl, trainStopsSearchToUrl, backFromUrl } fro
 import { DownloadButton } from "../components/DownloadButton";
 import { downloadCsv,downloadJson, makeFileName } from "../utils/exports";
 import { STATION_COLUMNS } from "../utils/exportColumns";
-import { ItalianDateInput } from "../components/ItalianDateInput";
+import { DayByDayTable } from "../components/DayByDayTable";
 import { formatItalianDate } from "../utils/dates";
 import { BackLink } from "../components/BackLink";
 import { Section } from "../components/Section";
 import { ChartSlot } from "../components/ChartSlot";
 import { PageNav } from "../components/PageNav";
 import { AlertModal } from "../components/AlertModal";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 export function TrainAnalysisPage (){
     const [searchParams] = useSearchParams()
@@ -24,7 +24,6 @@ export function TrainAnalysisPage (){
     const train = useMemo(()=> trainAnalysisFromUrl(searchParams), [searchParams])
     const params = useMemo(()=> (train?{... train, includeStations:true}: null), [train],)
     const {data : result , error, isLoading} = useApiRequest(params, getRouteStats)
-    const [dayToOpen, setDayToOpen] = useState(train?.startDate ?? '')
     const navigate = useNavigate()
 
     if(!train){
@@ -72,10 +71,10 @@ export function TrainAnalysisPage (){
             { id: 'summary', label: 'Summary' },
             { id: 'over-time', label: 'Over time' },
             { id: 'stops', label: 'Stops' },
-            { id: 'one-day', label: 'One day' },
+            { id: 'by-day', label: 'Day by day' },
           ]} />
 
-          <StatsSummary summary={result.overall} period={period} />
+          <StatsSummary summary={result.overall} period={period} runsOf={`train ${train.trainNumber}`} />
 
           <Section id="over-time" title="Over time">
             <ChartSlot
@@ -91,28 +90,19 @@ export function TrainAnalysisPage (){
             />
             <StationTable stations={result.by_station} threshold={result.overall.on_time_threshold_minutes} />
           </Section>
+           <Section
+            id="by-day"
+            title="Day by day"
+            description="Every day this train ran in the period, at its final station. Open a day to see all its stops and platforms."
+            >
+            <DayByDayTable
+              days={result.by_day}
+              threshold={result.overall.on_time_threshold_minutes}
+              stopsLinkFor={(isoDate) => pageUrl('/stops', trainStopsSearchToUrl({ trainNumber: train.trainNumber, origin: train.origin, travelDate: isoDate }), here)}
+            />
+           </Section>
         </>
       )}
-
-      <Section id="one-day" title="One day in detail" description="All stops and platforms of this train on one day.">
-        <div className="flex flex-wrap gap-3 items-end">
-          <ItalianDateInput
-            label="Day"
-            value={dayToOpen}
-            onChange={setDayToOpen}
-            min={train.startDate}
-            max={train.endDate}
-          />
-          {dayToOpen && (
-            <Link
-              to={pageUrl('/stops', trainStopsSearchToUrl({ trainNumber: train.trainNumber, origin: train.origin, travelDate: dayToOpen }), here)}
-              className="bg-accent text-white rounded-md px-4 py-2 text-sm font-medium"
-            >
-              Open this day
-            </Link>
-          )}
-        </div>
-      </Section>
     </div>
   )
 }

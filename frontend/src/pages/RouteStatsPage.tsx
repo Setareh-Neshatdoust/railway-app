@@ -1,16 +1,17 @@
-import { getRouteStats } from '../api/client'
+import { getRouteStats, getSegmentStats } from '../api/client'
 import { RouteSearchForm, type RouteSearchValues } from '../components/RouteSearchForm'
 import { AlertModal } from '../components/AlertModal'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useMemo, useCallback, useState } from 'react'
 import { useApiRequest } from '../hooks/useApiRequest'
 import { routeSearchFromUrl, routeSearchToUrl, trainAnalysisToUrl, segmentSearchToUrl, pageUrl } from '../routes/searchParams'
-import { formatValue, getPercentageColor } from '../utils/format'
+import { formatValue, getPercentageColor, formatRuns} from '../utils/format'
 import { StatsSummary } from '../components/StatsSummary'
 import { StationTable } from '../components/StationTable'
 import { DownloadButton } from '../components/DownloadButton'
 import { downloadCsv, downloadJson, makeFileName } from '../utils/exports'
-import { STATION_COLUMNS, TRAIN_COLUMNS } from '../utils/exportColumns'
+import { STATION_COLUMNS, TRAIN_COLUMNS, SEGMENT_TRAIN_COLUMNS } from '../utils/exportColumns'
+import { SegmentResult } from '../components/SegmentResult'
 import { formatItalianDate } from '../utils/dates'
 import { useCollapsibleList } from '../hooks/useCollapsibleList'
 import { ShowMoreButton } from '../components/ShowMoreButton'
@@ -25,7 +26,16 @@ export function RouteStatsPage() {
   const location = useLocation()
   const here = location.pathname + location.search
   const search = useMemo(() => routeSearchFromUrl(searchParams), [searchParams])
-  const { data: result, error, isLoading } = useApiRequest(search, getRouteStats)
+  // One search, two kinds of analysis: only the one chosen in the form is requested (the other gets null)
+  const relationSearch = useMemo(() => (search?.mode === 'relation' ? search : null), [search])
+  const stopsSearch = useMemo(() => (search?.mode === 'stops' ? search : null), [search])
+  const relation = useApiRequest(relationSearch, getRouteStats)
+  const stops = useApiRequest(stopsSearch, getSegmentStats)
+  const result = relation.data
+  const stopsResult = stops.data
+  const error = relation.error ?? stops.error
+  const isLoading = relation.isLoading || stops.isLoading
+
   const trains = useCollapsibleList(result?.by_train ?? [], 5)
   const period = search ? `${formatItalianDate(search.startDate)} – ${formatItalianDate(search.endDate)}` : ''
   const baseName =
@@ -63,6 +73,44 @@ export function RouteStatsPage() {
         <AlertModal message={error} onClose={closeError} />
       )}
 
+            {stopsResult && search && (
+        <>
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-medium">{stopsResult.origin} → {stopsResult.destination}</h3>
+              <p className="text-sm text-muted">
+                {period} · every train that stopped at {stopsResult.origin} and then at {stopsResult.destination}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <DownloadButton
+                label="Trains (CSV)"
+                onClick={() => downloadCsv(`${baseName}_stops_trains.csv`, stopsResult.by_train, SEGMENT_TRAIN_COLUMNS)}
+              />
+              <DownloadButton
+                label="All (JSON)"
+                onClick={() => downloadJson(`${baseName}_stops.json`, {
+                  source: 'TrainStats (trainstats.altervista.org)',
+                  generated_at: new Date().toISOString(),
+                  ...stopsResult,
+                })}
+              />
+            </div>
+          </div>
+          <SegmentResult
+            data={stopsResult}
+            period={period}
+            linkFor={(train) => pageUrl('/train', trainAnalysisToUrl({
+              trainNumber: train.train_number,
+              origin: train.train_origin,
+              destination: train.train_destination,
+              startDate: search.startDate,
+              endDate: search.endDate,
+            }), here)}
+          />
+        </>
+      )}
+
       {result && search && (
         <>
           <div className="flex flex-wrap items-end justify-between gap-3">
@@ -92,7 +140,7 @@ export function RouteStatsPage() {
             </div>
           </div>
 
-          <DirectTrainNotice origin={search.origin} destination={search.destination} />
+          <DirectTrainNotice origin={search.origin} destination={search.destination} startDate={search.startDate} endDate={search.endDate} />
 
           <PageNav items={[
             { id: 'summary', label: 'Summary' },
@@ -130,8 +178,8 @@ export function RouteStatsPage() {
                   >
                     {train.train_number}
                   </Link>
-                  <span className="font-mono text-muted mr-4" title="Days on which this train has recorded data">
-                    {train.total_records} days
+                  <span className="font-mono text-muted mr-4" title="Times this train ran in the period, and how many of them were cancelled">
+                    {formatRuns(train.total_records, train.cancelled_count)}
                   </span>
                   <span
                     className={`font-mono ${getPercentageColor(train.on_time_percentage)}`}

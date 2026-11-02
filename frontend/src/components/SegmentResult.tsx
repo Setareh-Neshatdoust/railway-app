@@ -1,16 +1,23 @@
-import type { SegmentStatsResponse } from '../api/types'
+import type { SegmentStatsResponse, SegmentTrainStats } from '../api/types'
 import { useCollapsibleList } from '../hooks/useCollapsibleList'
-import { formatValue, getDelayColor, getPercentageColor } from '../utils/format'
+import { formatValue, getDelayColor, getPercentageColor, formatRuns } from '../utils/format'
 import { ChartSlot } from './ChartSlot'
 import { Section } from './Section'
 import { ShowMoreButton } from './ShowMoreButton'
 import { StatsSummary } from './StatsSummary'
 import { PageNav } from './PageNav'
 import { CategoryBadge, CategoryLegend } from './CategoryBadge'
+import { Link } from 'react-router-dom'
 
+// linkFor (optional) gives the address of a train's own analysis
+interface SegmentResultProps {
+  data: SegmentStatsResponse
+  period: string
+  linkFor?: (train: SegmentTrainStats) => string
+}
 // Statistics between the origin and one intermediate stop, the same method as
 // TrainStats' "Cerca per fermate": every train that stopped at both stations.
-export function SegmentResult({ data, period }: { data: SegmentStatsResponse, period: string }) {
+export function SegmentResult({ data, period, linkFor }: SegmentResultProps) {
   const trains = useCollapsibleList(data.by_train, 5)
   return (
     <>
@@ -34,7 +41,7 @@ export function SegmentResult({ data, period }: { data: SegmentStatsResponse, pe
         />
       </Section>
 
-      <Section id="by-train" title={`By train (${data.by_train.length})`} description="Trains that stopped at both stations in this period.">
+      <Section id="by-train" title={`By train (${data.by_train.length})`} description={`Trains that stopped at both stations in this period.${linkFor ? " Click a train to see its whole journey." : ""}`}>
         <ChartSlot
           title="On-time rate by train"
           shows="One bar per train, sorted from best to worst, on a common scale from 0 to 100%."
@@ -45,13 +52,17 @@ export function SegmentResult({ data, period }: { data: SegmentStatsResponse, pe
             <div key={train.train_number} className="flex items-center gap-3 px-4 py-2 text-sm">
               <CategoryBadge category={train.category} />
               <span className="flex-1">
-                {train.train_number}
+                {linkFor ? (
+                  <Link to={linkFor(train)} className="text-accent hover:underline">{train.train_number}</Link>
+                ) : (
+                  train.train_number
+                )}
                 <span className="text-xs text-muted ml-2">
                   {train.train_origin} → {train.train_destination}
                 </span>
               </span>
-              <span className="font-mono text-muted mr-4" title="Days on which this train has recorded data">
-                {train.total_records} days
+              <span className="font-mono text-muted mr-4" title="Times this train ran in the period, and how many of them were cancelled">
+                {formatRuns(train.total_records, train.cancelled_count)}
               </span>
               <span
                 className={`font-mono ${getPercentageColor(train.on_time_percentage)}`}
