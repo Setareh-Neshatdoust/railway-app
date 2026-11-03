@@ -20,6 +20,7 @@ export interface StationStats {
   days_checked: number
   days_with_data: number
   no_arrival_count: number    // runs with an empty arrival cell (the train starts here)
+  cancelled_count: number     // trips marked "X" (cancelled) at this station
   not_recorded_count: number  // runs where TrainStats writes "n.d." (time not available)
   no_departure_count: number
   not_recorded_departure_count: number

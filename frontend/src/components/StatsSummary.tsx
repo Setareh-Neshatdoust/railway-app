@@ -22,11 +22,11 @@ function StatCard ({label, value, colorClass, detail, info} : StatCardProps){
 
 //Three headline numbers, averages over every train run in the chosen period
 export function StatsSummary ({summary, period, runsOf}:{summary : RouteStatsSummary, period : string, runsOf? : string}){
-    const runs = runsOf ? `${summary.total_records} runs of ${runsOf}` : `${summary.total_records} train runs`
+    const trips = runsOf ? `${summary.total_records} trips of ${runsOf}` : `${summary.total_records} trips`
     return (
         <div id="summary" className="scroll-mt-32">
             <p className="text-xs text-muted mb-2">
-                Averages over {period} · {runs} train runs
+                Averages over {period} · {trips} 
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <StatCard
@@ -34,21 +34,21 @@ export function StatsSummary ({summary, period, runsOf}:{summary : RouteStatsSum
                 value={formatValue(summary.on_time_percentage,'%')}
                 colorClass={getPercentageColor(summary.on_time_percentage)}
                 detail={`arrived at most ${summary.on_time_threshold_minutes} min late`}
-                info={`Share of train runs that arrived at most ${summary.on_time_threshold_minutes} minutes after the timetable. Cancelled runs and runs without a recorded arrival are not counted.`}
+                info={`Share of trips that arrived at most ${summary.on_time_threshold_minutes} minutes after the timetable. Cancelled trips and trips without a recorded arrival are not counted.`}
                 />
                 <StatCard
                 label="Avg arrival delay"
                 value={formatValue(summary.avg_arrival_delay_min,'m')}
                 colorClass={getDelayColor(summary.avg_arrival_delay_min)}
-                detail="mean of all train runs"
-                info="Arrival delays of all train runs in the period, added up and divided by their number. Cancelled runs are not counted."
+                detail="mean of all trips"
+                info="Arrival delays of all trips in the period, added up and divided by their number. Cancelled trips are not counted."
                 />
                 <StatCard
                 label="Cancellation rate"
                 value={formatValue(summary.cancellation_rate_pct,'%')}
                 colorClass={getCancellationColor(summary.cancellation_rate_pct)}
-                detail={`${summary.cancelled_count} of ${summary.total_records} runs cancelled`}
-                info="Share of train runs in the period that TrainStats marks as cancelled (Soppresso)"
+                detail={`${summary.cancelled_count} of ${summary.total_records} trips cancelled`}
+                info="Share of trips in the period that TrainStats marks as cancelled (Soppresso)"
                 />
             </div>
         </div>

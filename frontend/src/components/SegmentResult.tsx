@@ -8,6 +8,7 @@ import { StatsSummary } from './StatsSummary'
 import { PageNav } from './PageNav'
 import { CategoryBadge, CategoryLegend } from './CategoryBadge'
 import { Link } from 'react-router-dom'
+import { InfoTip } from './InfoTip'
 
 // linkFor (optional) gives the address of a train's own analysis
 interface SegmentResultProps {
@@ -50,7 +51,13 @@ export function SegmentResult({ data, period, linkFor }: SegmentResultProps) {
         <div className="border border-line rounded-md divide-y divide-line">
             <div className="flex items-center gap-3 bg-panel px-4 py-2 text-xs font-medium text-muted">
             <span className="flex-1">Train</span>
-            <span className="w-28 text-center">Trips</span>
+            <span className="w-28 text-center">
+              Trips
+              <InfoTip
+                align="right"
+                text={`Days on which the train stopped at ${data.origin} and then at ${data.destination}, wherever it started or ended, cancelled trips included.`}
+              />
+            </span>
             <span className="w-28 text-center">On time (≤ {data.overall.on_time_threshold_minutes} min)</span>
           </div>
           {trains.visibleItems.map((train) => (

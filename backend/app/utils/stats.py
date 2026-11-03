@@ -99,6 +99,7 @@ def aggregate_station_stats(
             "days_checked": len(station_stops),
             "days_with_data": len(arrival_delays),
             "no_arrival_count": sum(1 for s in station_stops if _cell(s.get("arrival_delay")) == ""),
+            "cancelled_count": sum(1 for s in station_stops if "x" in (_cell(s.get("arrival_delay")), _cell(s.get("departure_delay")))),
             "not_recorded_count": sum(1 for s in station_stops if _cell(s.get("arrival_delay")) == "n.d."),
             "no_departure_count": sum(1 for s in station_stops if _cell(s.get("departure_delay")) == ""),
             "not_recorded_departure_count": sum(1 for s in station_stops if _cell(s.get("departure_delay")) == "n.d."),

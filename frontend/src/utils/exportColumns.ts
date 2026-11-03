@@ -6,7 +6,7 @@ import type { CsvColumn } from './exports'
 export const TRAIN_COLUMNS: CsvColumn<TrainStats>[] = [
   { label: 'Train number', value: (t) => t.train_number },
   { label: 'Category', value: (t) => t.category },
-  { label: 'Records', value: (t) => t.total_records },
+  { label: 'Trips', value: (t) => t.total_records },
   { label: 'Cancelled', value: (t) => t.cancelled_count },
   { label: 'Cancellation rate %', value: (t) => t.cancellation_rate_pct },
   { label: 'Avg departure delay (min)', value: (t) => t.avg_departure_delay_min },
@@ -19,7 +19,7 @@ export const SEGMENT_TRAIN_COLUMNS: CsvColumn<SegmentTrainStats>[] = [
   { label: 'Category', value: (t) => t.category },
   { label: 'Train from', value: (t) => t.train_origin },
   { label: 'Train to', value: (t) => t.train_destination },
-  { label: 'Days with data', value: (t) => t.total_records },
+  { label: 'Trips', value: (t) => t.total_records },
   { label: 'Cancelled', value: (t) => t.cancelled_count },
   { label: 'Cancellation rate %', value: (t) => t.cancellation_rate_pct },
   { label: 'Avg departure delay (min)', value: (t) => t.avg_departure_delay_min },
@@ -33,10 +33,13 @@ export const STATION_COLUMNS: CsvColumn<StationStats>[] = [
   { label: 'Avg arrival delay (min)', value: (s) => s.avg_arrival_delay_min },
   { label: 'Avg departure delay (min)', value: (s) => s.avg_departure_delay_min },
   { label: 'On-time %', value: (s) => s.on_time_percentage },
-  { label: 'Runs checked', value: (s) => s.days_checked },
-  { label: 'Runs with recorded delay', value: (s) => s.days_with_data },
-  { label: 'Runs without arrival (departure station)', value: (s) => s.no_arrival_count },
-  { label: 'Runs not recorded (n.d.)', value: (s) => s.not_recorded_count },
+  { label: 'Trips checked', value: (s) => s.days_checked },
+  { label: 'Trips with recorded arrival delay', value: (s) => s.days_with_data },
+  { label: 'Trips cancelled here (X)', value: (s) => s.cancelled_count },
+  { label: 'Trips without arrival (departure station)', value: (s) => s.no_arrival_count },
+  { label: 'Trips with arrival not recorded (n.d.)', value: (s) => s.not_recorded_count },
+  { label: 'Trips without departure (final stop)', value: (s) => s.no_departure_count },
+  { label: 'Trips with departure not recorded (n.d.)', value: (s) => s.not_recorded_departure_count },
 ]
 
 export const STOP_COLUMNS: CsvColumn<TrainStop>[] = [

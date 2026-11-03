@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any, Dict
 from fastapi import APIRouter, HTTPException
 from datetime import timedelta
 from app.services.trainstats_client import fetch_relation_html, fetch_train_details_html, fetch_train_stops_html, fetch_stops_between_text
@@ -41,13 +41,15 @@ def get_route_stats(
                 status_code=404,
                 detail=f"Train '{train_number}' was not found between '{origin}' and '{destination}'.",
             )
-
-    all_records = []
-    by_train = []
+    # TrainStats can list the same train twice, e.g. once more for a day with a different
+    # timetable: that day then comes back from both entries. Keep one record per train and day
+    records_by_train: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    categories: Dict[str, Optional[str]] = {}
     for t in trains:
+        number = t["train_number"]
         try:
             details_html = fetch_train_details_html(
-                t["train_number"],
+                number,
                 origin,
                 destination,
                 t["origin_time"],
@@ -59,15 +61,23 @@ def get_route_stats(
         except Exception:
             records = []
 
+        days = records_by_train.setdefault(number, {})
+        for r in records:
+            days.setdefault(r.get("date"), r)
+        categories.setdefault(number, t.get("category"))
+
+    all_records = []
+    by_train = []
+    for number, days in records_by_train.items():
+        records = list(days.values())
         train_stats = aggregate_route_stats(records, on_time_threshold_minutes)
         if train_stats["total_records"] > 0:
             by_train.append({
-            "train_number": t.get("train_number"),
-            "category": t.get("category"),
-            **train_stats,
-        })
+                "train_number": number,
+                "category": categories[number],
+                **train_stats,
+            })
         all_records.extend(records)
-
     overall = aggregate_route_stats(all_records, on_time_threshold_minutes)
         
     if overall["total_records"] == 0:
@@ -106,7 +116,7 @@ def get_route_stats(
         "destination": destination,
         "start_date": start_date,
         "end_date": end_date,
-        "trains_analyzed": len(trains),
+        "trains_analyzed": len(by_train),
         "overall": overall,
         "by_train": by_train,
         "by_station": by_station,

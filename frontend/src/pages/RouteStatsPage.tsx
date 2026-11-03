@@ -5,7 +5,7 @@ import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { useMemo, useCallback, useState } from 'react'
 import { useApiRequest } from '../hooks/useApiRequest'
 import { routeSearchFromUrl, routeSearchToUrl, trainAnalysisToUrl, segmentSearchToUrl, pageUrl } from '../routes/searchParams'
-import { formatValue, getPercentageColor, formatRuns} from '../utils/format'
+import { formatValue, getPercentageColor} from '../utils/format'
 import { StatsSummary } from '../components/StatsSummary'
 import { StationTable } from '../components/StationTable'
 import { DownloadButton } from '../components/DownloadButton'
@@ -20,6 +20,7 @@ import { ChartSlot } from '../components/ChartSlot'
 import { PageNav } from '../components/PageNav'
 import { CategoryBadge, CategoryLegend } from '../components/CategoryBadge'
 import { DirectTrainNotice } from '../components/DirectTrainNotice'
+import { InfoTip } from '../components/InfoTip'
 
 export function RouteStatsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -169,6 +170,17 @@ export function RouteStatsPage() {
             />
             <div className="mb-3"><CategoryLegend /></div>
             <div className="border border-line rounded-md divide-y divide-line">
+              <div className="flex items-center gap-3 bg-panel px-4 py-2 text-xs font-medium text-muted">
+                <span className="flex-1">Train</span>
+                <span className="w-28 text-center">
+                  Trips
+                  <InfoTip
+                    align="right"
+                    text={`Days on which the train ran the whole way from ${search.origin} to ${search.destination}, cancelled trips included. On days it started or ended at another station it is not counted here, so it can have fewer trips than in “By stops”.`}
+                  />
+                </span>
+                <span className="w-28 text-center">On time (≤ {result.overall.on_time_threshold_minutes} min)</span>
+              </div>
               {trains.visibleItems.map((train) => (
                 <div key={train.train_number} className="flex items-center gap-3 px-4 py-2 text-sm">
                   <CategoryBadge category={train.category} />
@@ -178,11 +190,14 @@ export function RouteStatsPage() {
                   >
                     {train.train_number}
                   </Link>
-                  <span className="font-mono text-muted mr-4" title="Times this train ran in the period, and how many of them were cancelled">
-                    {formatRuns(train.total_records, train.cancelled_count)}
+                  <span className="w-28 text-center font-mono text-muted">
+                    {train.total_records}
+                    {train.cancelled_count > 0 && (
+                      <span className="block font-sans text-xs text-signal-bad">{train.cancelled_count} cancelled</span>
+                    )}
                   </span>
                   <span
-                    className={`font-mono ${getPercentageColor(train.on_time_percentage)}`}
+                    className={`w-28 text-center font-mono ${getPercentageColor(train.on_time_percentage)}`}
                     title={`On-time rate: arrived at most ${train.on_time_threshold_minutes} min late`}
                   >
                     {formatValue(train.on_time_percentage, '%')}
