@@ -19,6 +19,10 @@ export interface StationStats {
   stop_number: string | null
   days_checked: number
   days_with_data: number
+  no_arrival_count: number    // runs with an empty arrival cell (the train starts here)
+  not_recorded_count: number  // runs where TrainStats writes "n.d." (time not available)
+  no_departure_count: number
+  not_recorded_departure_count: number
   avg_arrival_delay_min: number | null
   avg_departure_delay_min: number | null
   on_time_percentage: number | null

@@ -25,8 +25,8 @@ interface RouteSearchFormProps {
 }
 
 const MODES: { value: SearchMode; title: string; description: string }[] = [
-  { value: 'relation', title: 'Route', description: 'Trains that start at the origin and end at the destination' },
-  { value: 'stops', title: 'Any two stops', description: 'Every train that stops at both stations, also intermediate ones' },
+  { value: 'relation', title: 'Whole journey', description: 'Trains that start at the origin and end at the destination' },
+  { value: 'stops', title: 'By stops', description: 'Every train that stops at both stations, even if it starts or ends elsewhere' },
 ]
 
 export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSearchFormProps) {
@@ -74,21 +74,33 @@ export function RouteSearchForm({ onSubmit, isLoading, initialValues }: RouteSea
 
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div role="radiogroup" aria-label="What to search" className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-        {MODES.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            role="radio"
-            aria-checked={mode === option.value}
-            onClick={() => handleModeChange(option.value)}
-            className={`rounded-md border px-3 py-2 text-left ${mode === option.value ? 'border-accent bg-page' : 'border-line hover:border-accent'}`}
-          >
-            <span className={`block text-sm font-medium ${mode === option.value ? 'text-accent' : 'text-primary'}`}>{option.title}</span>
-            <span className="block text-xs text-muted">{option.description}</span>
-          </button>
-        ))}
-      </div>
+      <fieldset className="sm:col-span-2">
+        <legend className="mb-3 text-sm font-medium">Search mode</legend>
+        <div role="radiogroup" aria-label="Search mode" className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {MODES.map((option) => {
+            const selected = mode === option.value
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={selected}
+                onClick={() => handleModeChange(option.value)}
+                className={`flex items-start gap-3 rounded-lg border-2 px-4 py-3 text-left ${selected ? 'border-accent bg-accent/10' : 'border-line bg-page hover:border-accent'}`}
+              >
+                <span className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 ${selected ? 'border-accent' : 'border-muted'}`}>
+                  {selected && <span className="h-2 w-2 rounded-full bg-accent" />}
+                </span>
+                <span>
+                  <span className={`block text-base font-semibold ${selected ? 'text-accent' : ''}`}>{option.title}</span>
+                  <span className="block text-xs text-muted mt-0.5">{option.description}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </fieldset>
+      <p className="sm:col-span-2 border-t border-line pt-4 text-sm font-medium">Period and stations</p>
       <StationAutocomplete
         label="Origin"
         value={origin}

@@ -63,6 +63,11 @@ def aggregate_route_stats(
         "on_time_percentage": round(len(on_time) / len(arrival_delays) * 100, 2) if arrival_delays else None,
         "on_time_threshold_minutes": on_time_threshold_minutes,
     }
+
+def _cell(value: Optional[str]) -> str:
+    """A table cell as plain lower-case text: None and spaces become ''."""
+    return (value or "").strip().lower()
+
 """
 Analyzing also intemediate stations not only origin and destination
 """
@@ -93,6 +98,10 @@ def aggregate_station_stats(
             "stop_number": station_stops[0].get("stop_number"),
             "days_checked": len(station_stops),
             "days_with_data": len(arrival_delays),
+            "no_arrival_count": sum(1 for s in station_stops if _cell(s.get("arrival_delay")) == ""),
+            "not_recorded_count": sum(1 for s in station_stops if _cell(s.get("arrival_delay")) == "n.d."),
+            "no_departure_count": sum(1 for s in station_stops if _cell(s.get("departure_delay")) == ""),
+            "not_recorded_departure_count": sum(1 for s in station_stops if _cell(s.get("departure_delay")) == "n.d."),
             "avg_arrival_delay_min": round(sum(arrival_delays) / len(arrival_delays), 2) if arrival_delays else None,
             "avg_departure_delay_min": round(sum(departure_delays) / len(departure_delays), 2) if departure_delays else None,
             "on_time_percentage": round(len(on_time) / len(arrival_delays) * 100, 2) if arrival_delays else None,

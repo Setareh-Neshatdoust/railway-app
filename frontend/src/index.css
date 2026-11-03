@@ -15,6 +15,10 @@
   --rt-signal-neutral: #64748B;
 
   --rt-accent: #185FA5;
+
+  --rt-secondary-bg: #E3EDF7;
+  --rt-secondary-fg: #185FA5;
+  --rt-secondary-hover: #D3E3F3;
 }
 
 [data-theme="dark"] {
@@ -31,6 +35,10 @@
   --rt-signal-neutral: #8A99A8;
 
   --rt-accent: #4FA8E0;
+
+  --rt-secondary-bg: #1A3247;
+  --rt-secondary-fg: #8CC8F0;
+  --rt-secondary-hover: #22405B;
 }
 
 @theme {
@@ -50,6 +58,10 @@
   --color-signal-neutral: var(--rt-signal-neutral);
 
   --color-accent: var(--rt-accent);
+
+  --color-secondary-bg: var(--rt-secondary-bg);
+  --color-secondary-fg: var(--rt-secondary-fg);
+  --color-secondary-hover: var(--rt-secondary-hover);
 }
 
 body {

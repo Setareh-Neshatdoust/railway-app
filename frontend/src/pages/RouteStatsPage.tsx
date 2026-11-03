@@ -60,14 +60,14 @@ export function RouteStatsPage() {
         <p className="text-sm text-muted mt-1">Punctuality of every train between two stations over a period.</p>
       </div>
 
-      <Section title="Search">
+      <section className="bg-panel border border-line rounded-lg p-5">
         <RouteSearchForm
           key={searchParams.toString()}
           initialValues={search}
           onSubmit={handleSearch}
           isLoading={isLoading}
         />
-      </Section>
+      </section>
 
       {error && closedErrorFor !== searchKey && (
         <AlertModal message={error} onClose={closeError} />

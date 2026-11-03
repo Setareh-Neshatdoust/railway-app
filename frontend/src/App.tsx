@@ -3,6 +3,7 @@ import { useTheme } from './hooks/useTheme'
 import { ThemeToggleButton } from './components/ThemeToggleButton'
 import { AppRoutes } from './routes/AppRoutes'
 import { BackToTop } from './components/BackToTop'
+import { Logo } from './components/Logo'
 
 function App() {
   const { isDark, toggleTheme } = useTheme()
@@ -11,7 +12,10 @@ function App() {
       <header className="sticky top-0 z-10 bg-page border-b border-line">
         <div className="mx-auto max-w-5xl h-16 px-6 flex items-center justify-between">
           <h1 className="text-lg font-medium">
-            <Link to="/" className="hover:text-accent">Italian railway performance</Link>
+            <Link to="/" className="flex items-center gap-2.5 hover:text-accent">
+              <Logo className="h-8 w-8 text-accent" />
+              Italian railway performance
+            </Link>
           </h1>
           <ThemeToggleButton isDark={isDark} onToggle={toggleTheme} />
         </div>

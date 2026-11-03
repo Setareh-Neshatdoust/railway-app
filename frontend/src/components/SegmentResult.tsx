@@ -1,6 +1,6 @@
 import type { SegmentStatsResponse, SegmentTrainStats } from '../api/types'
 import { useCollapsibleList } from '../hooks/useCollapsibleList'
-import { formatValue, getDelayColor, getPercentageColor, formatRuns } from '../utils/format'
+import { formatValue, getDelayColor, getPercentageColor} from '../utils/format'
 import { ChartSlot } from './ChartSlot'
 import { Section } from './Section'
 import { ShowMoreButton } from './ShowMoreButton'
@@ -48,6 +48,11 @@ export function SegmentResult({ data, period, linkFor }: SegmentResultProps) {
         />
         <div className="mb-3"><CategoryLegend /></div>
         <div className="border border-line rounded-md divide-y divide-line">
+            <div className="flex items-center gap-3 bg-panel px-4 py-2 text-xs font-medium text-muted">
+            <span className="flex-1">Train</span>
+            <span className="w-28 text-center">Trips</span>
+            <span className="w-28 text-center">On time (≤ {data.overall.on_time_threshold_minutes} min)</span>
+          </div>
           {trains.visibleItems.map((train) => (
             <div key={train.train_number} className="flex items-center gap-3 px-4 py-2 text-sm">
               <CategoryBadge category={train.category} />
@@ -61,11 +66,14 @@ export function SegmentResult({ data, period, linkFor }: SegmentResultProps) {
                   {train.train_origin} → {train.train_destination}
                 </span>
               </span>
-              <span className="font-mono text-muted mr-4" title="Times this train ran in the period, and how many of them were cancelled">
-                {formatRuns(train.total_records, train.cancelled_count)}
+              <span className="w-28 text-center font-mono text-muted">
+                {train.total_records}
+                {train.cancelled_count > 0 && (
+                  <span className="block font-sans text-xs text-signal-bad">{train.cancelled_count} cancelled</span>
+                )}
               </span>
               <span
-                className={`font-mono ${getPercentageColor(train.on_time_percentage)}`}
+                className={`w-28 text-center font-mono ${getPercentageColor(train.on_time_percentage)}`}
                 title={`On-time rate: arrived at most ${train.on_time_threshold_minutes} min late`}
               >
                 {formatValue(train.on_time_percentage, '%')}

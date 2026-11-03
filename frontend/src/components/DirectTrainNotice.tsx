@@ -61,8 +61,8 @@ export function DirectTrainNotice({ origin, destination, startDate, endDate }: D
       {message}
       {data.through_last_seen && (
         stopsLink
-          ? <>{' '}<Link to={stopsLink} className="font-medium underline hover:no-underline">Search as “Any two stops” →</Link></>
-          : <>{' '}Choose “Any two stops” above to analyse them.</>
+          ? <>{' '}<Link to={stopsLink} className="font-medium underline hover:no-underline">Search as “By stops” →</Link></>
+          : <>{' '}Choose “By stops” above to analyse them.</>
       )}
     </div>
   )

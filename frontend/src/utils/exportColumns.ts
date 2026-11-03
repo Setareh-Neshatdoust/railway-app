@@ -35,6 +35,8 @@ export const STATION_COLUMNS: CsvColumn<StationStats>[] = [
   { label: 'On-time %', value: (s) => s.on_time_percentage },
   { label: 'Runs checked', value: (s) => s.days_checked },
   { label: 'Runs with recorded delay', value: (s) => s.days_with_data },
+  { label: 'Runs without arrival (departure station)', value: (s) => s.no_arrival_count },
+  { label: 'Runs not recorded (n.d.)', value: (s) => s.not_recorded_count },
 ]
 
 export const STOP_COLUMNS: CsvColumn<TrainStop>[] = [
