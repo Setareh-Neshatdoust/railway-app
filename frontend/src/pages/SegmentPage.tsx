@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate,useLocation } from 'react-router-dom'
 import { getSegmentStats } from '../api/client'
 import { BackLink } from '../components/BackLink'
 import { DownloadButton } from '../components/DownloadButton'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { SegmentResult } from '../components/SegmentResult'
 import { useApiRequest } from '../hooks/useApiRequest'
-import { segmentSearchFromUrl, backFromUrl } from '../routes/searchParams'
+import { segmentSearchFromUrl, backFromUrl, pageUrl, trainAnalysisToUrl } from '../routes/searchParams'
 import { formatItalianDate } from '../utils/dates'
 import { SEGMENT_TRAIN_COLUMNS } from '../utils/exportColumns'
 import { downloadCsv, downloadJson, makeFileName } from '../utils/exports'
@@ -18,6 +18,8 @@ export function SegmentPage() {
   const search = useMemo(() => segmentSearchFromUrl(searchParams), [searchParams])
   const { data, error, isLoading } = useApiRequest(search, getSegmentStats)
   const navigate = useNavigate()
+  const location = useLocation()
+  const here = location.pathname + location.search
 
   if (!search) {
     return <ErrorMessage message="Missing origin, destination or dates in the address." />
@@ -57,7 +59,19 @@ export function SegmentPage() {
 
       {isLoading && <p className="text-sm text-muted">Loading…</p>}
       {error && <AlertModal message={error} onClose={() => navigate(backFromUrl(searchParams))} />}
-      {data && <SegmentResult data={data} period={period} />}
+        {data && (
+        <SegmentResult
+          data={data}
+          period={period}
+          linkFor={(train) => pageUrl('/train', trainAnalysisToUrl({
+            trainNumber: train.train_number,
+            origin: train.train_origin,
+            destination: train.train_destination,
+            startDate: search.startDate,
+            endDate: search.endDate,
+          }), here)}
+        />
+      )}
     </div>
   )
 }

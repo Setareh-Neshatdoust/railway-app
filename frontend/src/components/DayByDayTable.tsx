@@ -39,7 +39,7 @@ export function DayByDayTable({ days, threshold, stopsLinkFor }: DayByDayTablePr
             <th className="px-3 py-2 font-medium">Date</th>
             <th className="px-3 py-2 font-medium text-right">Departure delay</th>
             <th className="px-3 py-2 font-medium text-right">Arrival delay</th>
-            <th className="px-3 py-2 font-medium">What happened</th>
+            <th className="px-3 py-2 font-medium">Status</th>
             <th className="px-3 py-2 font-medium"><span className="sr-only">Stops</span></th>
           </tr>
         </thead>
