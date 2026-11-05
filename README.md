@@ -9,6 +9,12 @@ A web application for analyzing Italian train performance data using TrainStats 
 - Deployment: Docker
 
 ## Running with Docker
+One image contains the whole app (frontend and backend):
+
+    docker pull setarehneshatdoust/railway-opendata-webapp:v2.0
+    docker run -p 8000:8000 setarehneshatdoust/railway-opendata-webapp:v2.0
+
+Then open http://localhost:8000. The API is available under http://localhost:8000/api (e.g. /api/health).
 
 ### Backend
 ```bash
