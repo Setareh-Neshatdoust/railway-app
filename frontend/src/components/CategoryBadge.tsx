@@ -37,7 +37,7 @@ export function CategoryLegend() {
 
 export function CategoryBadge({ category }: { category: string | null }) {
   const code = (category ?? '').trim().toUpperCase()
-  if (!code) return null
+  if (!code) return <span className="inline-block min-w-11" aria-hidden="true" />
   return (
     <span
       title={CATEGORY_NAMES[code] ?? code}

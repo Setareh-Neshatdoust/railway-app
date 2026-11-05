@@ -39,6 +39,8 @@ export interface RouteStatsResponse {
   by_train: TrainStats[]
   by_station: StationStats[]
   by_day: DayStats[]
+  trains_without_answer: string[]   // TrainStats did not send these trains' daily records
+  stop_tables_without_answer: number
 }
 
 // One day of the period: the same indicators as the summary, for that day only
@@ -72,6 +74,7 @@ export interface TrainStopsResponse {
 export interface SegmentTrainStats extends TrainStats {
   train_origin: string
   train_destination: string
+    other_destinations: string[]     // other stations where it ended on some days
 }
 
 export interface SegmentStatsResponse {
@@ -81,6 +84,7 @@ export interface SegmentStatsResponse {
   end_date: string
   overall: RouteStatsSummary
   by_train: SegmentTrainStats[]
+  days_without_answer: string[]     // ISO dates TrainStats did not answer for
 }
 
 /// Is the route still served, and do trains pass through both stations? (GET /route/direct-train)

@@ -86,7 +86,7 @@ export function StationTable({stations, linkFor, threshold}: StationTableProps){
         {cancelledEverywhere > 0 && (
             <p className="mb-2 text-sm text-signal-bad">
                 {cancelledEverywhere} {cancelledEverywhere === 1 ? 'trip was' : 'trips were'} cancelled in this period
-                <span className="text-muted"> (not included in the figures below)</span>
+                <span className="text-muted"></span>
             </p>
         )}
         <div className="border border-line rounded-md overflow-hidden">

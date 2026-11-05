@@ -19,6 +19,7 @@ export const SEGMENT_TRAIN_COLUMNS: CsvColumn<SegmentTrainStats>[] = [
   { label: 'Category', value: (t) => t.category },
   { label: 'Train from', value: (t) => t.train_origin },
   { label: 'Train to', value: (t) => t.train_destination },
+  { label: 'Train to on other days', value: (t) => t.other_destinations.join(' / ') },
   { label: 'Trips', value: (t) => t.total_records },
   { label: 'Cancelled', value: (t) => t.cancelled_count },
   { label: 'Cancellation rate %', value: (t) => t.cancellation_rate_pct },

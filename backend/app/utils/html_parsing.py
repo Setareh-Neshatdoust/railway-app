@@ -234,7 +234,7 @@ def parse_stops_between_json(text: str, origin: str, destination: str) -> List[D
         )
         records.append({
             "train_number": train.get("n"),
-            "category": train.get("c"),
+            "category": train.get("c") or train.get("sub"),
             "train_origin": train.get("p"),
             "train_destination": train.get("a"),
             "departure_delay": departure_delay,

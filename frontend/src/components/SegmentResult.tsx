@@ -59,6 +59,7 @@ export function SegmentResult({ data, period, linkFor }: SegmentResultProps) {
               />
             </span>
             <span className="w-28 text-center">On time (≤ {data.overall.on_time_threshold_minutes} min)</span>
+            <span className="w-44">Note</span>
           </div>
           {trains.visibleItems.map((train) => (
             <div key={train.train_number} className="flex items-center gap-3 px-4 py-2 text-sm">
@@ -84,6 +85,9 @@ export function SegmentResult({ data, period, linkFor }: SegmentResultProps) {
                 title={`On-time rate: arrived at most ${train.on_time_threshold_minutes} min late`}
               >
                 {formatValue(train.on_time_percentage, '%')}
+              </span>
+              <span className="w-44 text-xs text-muted">
+                {train.other_destinations.length > 0 && `Some days ended to ${train.other_destinations.join(', ')}`}
               </span>
             </div>
           ))}

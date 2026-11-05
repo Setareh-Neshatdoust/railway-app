@@ -21,6 +21,7 @@ import { PageNav } from '../components/PageNav'
 import { CategoryBadge, CategoryLegend } from '../components/CategoryBadge'
 import { DirectTrainNotice } from '../components/DirectTrainNotice'
 import { InfoTip } from '../components/InfoTip'
+import { SourceGapsNotice } from '../components/SourceGapsNotice'
 
 export function RouteStatsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -98,6 +99,7 @@ export function RouteStatsPage() {
               />
             </div>
           </div>
+          <SourceGapsNotice days={stopsResult.days_without_answer} />
           <SegmentResult
             data={stopsResult}
             period={period}
@@ -140,9 +142,9 @@ export function RouteStatsPage() {
               />
             </div>
           </div>
-
+          
+          <SourceGapsNotice trains={result.trains_without_answer} stopTables={result.stop_tables_without_answer} />
           <DirectTrainNotice origin={search.origin} destination={search.destination} startDate={search.startDate} endDate={search.endDate} />
-
           <PageNav items={[
             { id: 'summary', label: 'Summary' },
             { id: 'over-time', label: 'Over time' },

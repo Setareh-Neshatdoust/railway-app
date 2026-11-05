@@ -11,6 +11,7 @@ import { formatItalianDate } from '../utils/dates'
 import { SEGMENT_TRAIN_COLUMNS } from '../utils/exportColumns'
 import { downloadCsv, downloadJson, makeFileName } from '../utils/exports'
 import { AlertModal } from '../components/AlertModal'
+import { SourceGapsNotice } from '../components/SourceGapsNotice'
 
 // From the origin to one intermediate stop, opened by clicking a station on Route analysis
 export function SegmentPage() {
@@ -59,6 +60,7 @@ export function SegmentPage() {
 
       {isLoading && <p className="text-sm text-muted">Loading…</p>}
       {error && <AlertModal message={error} onClose={() => navigate(backFromUrl(searchParams))} />}
+        {data && <SourceGapsNotice days={data.days_without_answer} />}
         {data && (
         <SegmentResult
           data={data}

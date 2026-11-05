@@ -16,6 +16,7 @@ import { ChartSlot } from "../components/ChartSlot";
 import { PageNav } from "../components/PageNav";
 import { AlertModal } from "../components/AlertModal";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { SourceGapsNotice } from "../components/SourceGapsNotice";
 
 export function TrainAnalysisPage (){
     const [searchParams] = useSearchParams()
@@ -67,6 +68,7 @@ export function TrainAnalysisPage (){
 
       {result && (
         <>
+          <SourceGapsNotice trains={result.trains_without_answer} stopTables={result.stop_tables_without_answer} />
           <PageNav items={[
             { id: 'summary', label: 'Summary' },
             { id: 'over-time', label: 'Over time' },
