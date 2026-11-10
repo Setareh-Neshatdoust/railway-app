@@ -165,9 +165,13 @@ def get_segment_stats(
     days = [s + timedelta(days=i) for i in range((e - s).days + 1)]
 
     def records_of(day):
-        try:
+        try:         
             text = fetch_stops_between_text(origin, destination, day.strftime("%d_%m_%Y"))
-            return parse_stops_between_json(text, origin, destination)
+            records = parse_stops_between_json(text, origin, destination)
+            for record in records:
+                record["date"] = day.strftime("%d/%m/%Y")  # the day of the request, for the chart by day
+            return records
+            
         except Exception:
             return None  # TrainStats did not answer
 
@@ -217,6 +221,7 @@ def get_segment_stats(
         "overall": aggregate_route_stats(all_records, on_time_threshold_minutes),
         "by_train": by_train,
         "days_without_answer": unanswered_days,
+        "by_day": aggregate_by_day(all_records, on_time_threshold_minutes),
     }
 
 @router.get("/direct-train")

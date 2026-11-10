@@ -17,6 +17,7 @@ import { PageNav } from "../components/PageNav";
 import { AlertModal } from "../components/AlertModal";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { SourceGapsNotice } from "../components/SourceGapsNotice";
+import { DelayByDayChart } from "../components/DelayByDayChart";
 
 export function TrainAnalysisPage (){
     const [searchParams] = useSearchParams()
@@ -79,9 +80,10 @@ export function TrainAnalysisPage (){
           <StatsSummary summary={result.overall} period={period} runsOf={`train ${train.trainNumber}`} />
 
           <Section id="over-time" title="Over time">
-            <ChartSlot
-              title="Arrival delay of this train by day"
-              shows="One point per day in the period, with the on-time limit drawn as a reference line."
+            <DelayByDayChart
+              days={result.by_day}
+              threshold={result.overall.on_time_threshold_minutes}
+              linkFor={(isoDate) => pageUrl('/stops', trainStopsSearchToUrl({ trainNumber: train.trainNumber, origin: train.origin, travelDate: isoDate }), here)}
             />
           </Section>
 

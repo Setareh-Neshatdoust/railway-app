@@ -22,6 +22,8 @@ import { CategoryBadge, CategoryLegend } from '../components/CategoryBadge'
 import { DirectTrainNotice } from '../components/DirectTrainNotice'
 import { InfoTip } from '../components/InfoTip'
 import { SourceGapsNotice } from '../components/SourceGapsNotice'
+import { OnTimeByTrainChart } from '../components/OnTimeByTrainChart'
+import { DelayByDayChart } from '../components/DelayByDayChart'
 
 export function RouteStatsPage() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -155,10 +157,7 @@ export function RouteStatsPage() {
           <StatsSummary summary={result.overall} period={period} />
 
           <Section id="over-time" title="Over time">
-            <ChartSlot
-              title="Average arrival delay by day"
-              shows="One point per day in the period, so trends and bad days stand out."
-            />
+            <DelayByDayChart days={result.by_day} threshold={result.overall.on_time_threshold_minutes} />
           </Section>
 
           <Section
@@ -166,9 +165,9 @@ export function RouteStatsPage() {
             title={`By train (${result.by_train.length})`}
             description="Trains with recorded data in this period. Click a train to see its stops."
           >
-            <ChartSlot
-              title="On-time rate by train"
-              shows="One bar per train, sorted from best to worst, on a common scale from 0 to 100%."
+            <OnTimeByTrainChart
+              trains={result.by_train}
+              linkFor={(train) => pageUrl('/train', trainAnalysisToUrl({ ...search, trainNumber: train.train_number }), here)}
             />
             <div className="mb-3"><CategoryLegend /></div>
             <div className="border border-line rounded-md divide-y divide-line">

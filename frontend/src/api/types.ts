@@ -85,6 +85,7 @@ export interface SegmentStatsResponse {
   overall: RouteStatsSummary
   by_train: SegmentTrainStats[]
   days_without_answer: string[]     // ISO dates TrainStats did not answer for
+  by_day: DayStats[]                // one entry per day, for the chart over time
 }
 
 /// Is the route still served, and do trains pass through both stations? (GET /route/direct-train)

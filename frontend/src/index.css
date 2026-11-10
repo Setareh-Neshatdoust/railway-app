@@ -100,3 +100,9 @@ body {
   color: var(--rt-muted);
   opacity: 0.4;
 }
+.react-datepicker-popper {
+  z-index: 20;
+}
+.chart svg {
+  --plot-background: var(--rt-panel);
+}

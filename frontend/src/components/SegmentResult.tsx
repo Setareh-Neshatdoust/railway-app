@@ -1,7 +1,6 @@
 import type { SegmentStatsResponse, SegmentTrainStats } from '../api/types'
 import { useCollapsibleList } from '../hooks/useCollapsibleList'
 import { formatValue, getDelayColor, getPercentageColor} from '../utils/format'
-import { ChartSlot } from './ChartSlot'
 import { Section } from './Section'
 import { ShowMoreButton } from './ShowMoreButton'
 import { StatsSummary } from './StatsSummary'
@@ -9,6 +8,8 @@ import { PageNav } from './PageNav'
 import { CategoryBadge, CategoryLegend } from './CategoryBadge'
 import { Link } from 'react-router-dom'
 import { InfoTip } from './InfoTip'
+import { OnTimeByTrainChart } from './OnTimeByTrainChart'
+import { DelayByDayChart } from './DelayByDayChart'
 
 // linkFor (optional) gives the address of a train's own analysis
 interface SegmentResultProps {
@@ -36,17 +37,11 @@ export function SegmentResult({ data, period, linkFor }: SegmentResultProps) {
       </p>
 
       <Section id="over-time" title="Over time">
-        <ChartSlot
-          title="Average arrival delay by day"
-          shows="One point per day in the period, so trends and bad days stand out."
-        />
+        <DelayByDayChart days={data.by_day} threshold={data.overall.on_time_threshold_minutes} />
       </Section>
 
       <Section id="by-train" title={`By train (${data.by_train.length})`} description={`Trains that stopped at both stations in this period.${linkFor ? " Click a train to see its whole journey." : ""}`}>
-        <ChartSlot
-          title="On-time rate by train"
-          shows="One bar per train, sorted from best to worst, on a common scale from 0 to 100%."
-        />
+        <OnTimeByTrainChart trains={data.by_train} linkFor={linkFor} />
         <div className="mb-3"><CategoryLegend /></div>
         <div className="border border-line rounded-md divide-y divide-line">
             <div className="flex items-center gap-3 bg-panel px-4 py-2 text-xs font-medium text-muted">

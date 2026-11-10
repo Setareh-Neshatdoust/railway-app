@@ -3,6 +3,7 @@ import DatePicker, { registerLocale } from 'react-datepicker'
 import { it } from 'date-fns/locale'
 import 'react-datepicker/dist/react-datepicker.css'
 import { dateToIso, isoToDate } from '../utils/dates'
+import 'react-datepicker/dist/react-datepicker.css'
 
 // Italian month and day names, weeks starting on Monday
 registerLocale('it', it)
