@@ -111,9 +111,8 @@ export function DelayByDayChart({ days, threshold, linkFor }: DelayByDayChartPro
 
   return (
     <div className="mb-4">
-      <div ref={container} className="chart text-xs text-primary" />
-      {hasCancelledDays && <p className="mt-1 text-xs text-muted">× = every trip of that day was cancelled</p>}
       <div ref={container} onClick={openClickedDay} className="chart text-xs text-primary" />
+      {hasCancelledDays && <p className="mt-1 text-xs text-muted">× = every trip of that day was cancelled</p>}
     </div>
   )
 }

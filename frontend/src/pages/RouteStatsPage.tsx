@@ -16,7 +16,7 @@ import { formatItalianDate } from '../utils/dates'
 import { useCollapsibleList } from '../hooks/useCollapsibleList'
 import { ShowMoreButton } from '../components/ShowMoreButton'
 import { Section } from '../components/Section'
-import { ChartSlot } from '../components/ChartSlot'
+import { DelayAlongRouteChart } from '../components/DelayAlongRouteChart'
 import { PageNav } from '../components/PageNav'
 import { CategoryBadge, CategoryLegend } from '../components/CategoryBadge'
 import { DirectTrainNotice } from '../components/DirectTrainNotice'
@@ -217,9 +217,10 @@ export function RouteStatsPage() {
               title="By station (all trains)"
               description={`Averages over ${period}. Click a station to open ${search.origin} → that station.`}
             >
-              <ChartSlot
-                title="Average delay along the route"
-                shows="Stations in travel order on the horizontal axis, average delay on the vertical axis, to see where delay builds up."
+              <DelayAlongRouteChart
+                stations={result.by_station}
+                threshold={result.overall.on_time_threshold_minutes}
+                linkFor={(station) => pageUrl('/segment', segmentSearchToUrl({ ...search, destination: station }), here)}
               />
               <StationTable
                 stations={result.by_station}

@@ -12,7 +12,7 @@ import { DayByDayTable } from "../components/DayByDayTable";
 import { formatItalianDate } from "../utils/dates";
 import { BackLink } from "../components/BackLink";
 import { Section } from "../components/Section";
-import { ChartSlot } from "../components/ChartSlot";
+import { DelayAlongRouteChart } from "../components/DelayAlongRouteChart";
 import { PageNav } from "../components/PageNav";
 import { AlertModal } from "../components/AlertModal";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
@@ -88,10 +88,7 @@ export function TrainAnalysisPage (){
           </Section>
 
           <Section id="stops" title="At every stop on the path" description={`Averages over ${period}.`}>
-            <ChartSlot
-              title="Average delay along the stops"
-              shows="Stops in travel order on the horizontal axis, average delay on the vertical axis."
-            />
+            <DelayAlongRouteChart stations={result.by_station} threshold={result.overall.on_time_threshold_minutes} />
             <StationTable stations={result.by_station} threshold={result.overall.on_time_threshold_minutes} />
           </Section>
            <Section
