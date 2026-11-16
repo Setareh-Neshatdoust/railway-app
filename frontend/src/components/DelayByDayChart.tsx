@@ -45,12 +45,17 @@ export function DelayByDayChart({ days, threshold, linkFor }: DelayByDayChartPro
     const allCancelled = data.filter((d) => d.delay === null && d.cancelled > 0)
     if (data.length === 0) return
 
+    // With only a few days, Plot would add labels for hours too, and the same date would be
+    // written several times: in a short period there is exactly one label per day
+    const times = data.map((d) => d.date.getTime())
+    const spanDays = (Math.max(...times) - Math.min(...times)) / 86_400_000
+
     const chart = Plot.plot({
       width: element.clientWidth,
       height: 280,
       marginLeft: 50,
       marginRight: 80,
-      x: { type: 'utc', label: null, tickFormat: '%d/%m', inset: 8 },
+      x: { type: 'utc', label: null, tickFormat: '%d/%m', inset: 8, ticks: spanDays <= 12 ? 'day' : undefined },
       y: { label: '↑ Average arrival delay (min)', grid: true, nice: true },
       marks: [
         Plot.rectY(measured, { x: 'date', interval: 'day', y: 'delay', inset: 1, fill: (d) => delayColor(d.delay as number, threshold), fillOpacity: 0.75 }),

@@ -38,7 +38,7 @@ You only need [Docker](https://www.docker.com/). One image contains the whole
 application, for Intel/AMD and for Apple Silicon:
 
 ```bash
-docker run -p 8000:8000 setarehneshatdoust/railway-opendata-webapp:v2.1
+docker run -p 8000:8000 setarehneshatdoust/railway-opendata-webapp:v2.2
 ```
 
 Then open <http://localhost:8000>. The API is under <http://localhost:8000/api>

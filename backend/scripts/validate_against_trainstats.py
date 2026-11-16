@@ -261,6 +261,11 @@ def random_cases(app_url, rng):
             time.sleep(10)   # the app or the source did not answer: wait a little and choose another route
             continue
         last_seen = status.json().get("last_seen") if status.status_code == 200 else None
+        if not last_seen:
+            continue
+        end = min(date.fromisoformat(last_seen), latest_end) - timedelta(days=rng.randint(0, 90))
+        start = end - timedelta(days=rng.randint(6, 120))
+        yield origin, destination, start, end
 
 
 # ---------------------------------------------------------------- main
